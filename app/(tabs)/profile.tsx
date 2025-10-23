@@ -16,95 +16,45 @@ import AuthService from '@/services/auth.service';
 import { UserData, Gender } from '@/types/user.types';
 import * as ImagePicker from 'expo-image-picker';
 
-type UserType = 'cliente' | 'motorista';
-
-type UserRegistrations = {
-  hasClienteRegistration: boolean;
-  hasMotoristaRegistration: boolean;
-};
+type AccountType = 'cliente' | 'motorista' | 'entregador';
+type VehicleType = 'moto' | 'carro' | 'mototaxi' | 'moto_normal' | 'expresso_black';
+type DeliveryType = 'moto' | 'carro' | 'bicicleta' | 'expresso';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [userType, setUserType] = useState<UserType>('cliente');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState<Gender>('prefiro-nao-informar');
+  
+  // Dados pessoais
+  const [name, setName] = useState('Andreia Bastos');
+  const [phone, setPhone] = useState('(71) 98263-3972');
+  const [email, setEmail] = useState('bastosa549@gmail.com');
+  const [cpf, setCpf] = useState('');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [complement, setComplement] = useState('');
+  const [reference, setReference] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   
-  const [registrations, setRegistrations] = useState<UserRegistrations>({
-    hasClienteRegistration: false,
-    hasMotoristaRegistration: false,
-  });
+  // Tipo de conta
+  const [accountType, setAccountType] = useState<AccountType>('cliente');
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleType | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryType | null>(null);
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
+  const vehicleOptions = [
+    { id: 'moto', name: 'Moto', icon: '🏍️', color: '#FF6B6B', description: 'Corridas rápidas' },
+    { id: 'carro', name: 'Carro', icon: '🚗', color: '#4ECDC4', description: 'Conforto e espaço' },
+    { id: 'mototaxi', name: 'Mototáxi', icon: '🛵', color: '#FFB800', description: 'Econômico' },
+    { id: 'moto_normal', name: 'Moto Normal', icon: '🏍️', color: '#95E1D3', description: 'Padrão' },
+    { id: 'expresso_black', name: 'Expresso Black 🖤', icon: '🚛', color: '#2C3E50', description: 'Cargas e animais' },
+  ];
 
-  const loadUserData = async () => {
-    try {
-      setIsLoading(true);
-      const user = await AuthService.getCurrentUser();
-      
-      if (!user) {
-        Alert.alert('Erro', 'Você precisa fazer login primeiro', [
-          { text: 'OK', onPress: () => router.replace('/login') },
-        ]);
-        return;
-      }
-      
-      setUserData(user);
-      setName(user.name);
-      setPhone(user.phone);
-      setEmail(user.email);
-      setAge(user.age ? user.age.toString() : '');
-      setGender(user.gender || 'prefiro-nao-informar');
-      setStreet(user.address?.street || '');
-      setNeighborhood(user.address?.neighborhood || '');
-      
-      setUserType(user.hasMotoristaRegistration ? 'motorista' : 'cliente');
-      setRegistrations({
-        hasClienteRegistration: user.hasClienteRegistration,
-        hasMotoristaRegistration: user.hasMotoristaRegistration,
-      });
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      Alert.alert('Erro', 'Não foi possível carregar seus dados');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      await AuthService.updateCurrentUser({
-        name,
-        phone,
-        email,
-        age: age ? parseInt(age) : undefined,
-        gender,
-        address: street || neighborhood ? {
-          street,
-          neighborhood,
-          city: 'Xique-Xique',
-          state: 'BA',
-          zipCode: '',
-        } : undefined,
-      });
-      
-      setIsEditing(false);
-      Alert.alert('✅ Sucesso', 'Perfil atualizado com sucesso!');
-      loadUserData();
-    } catch (error: any) {
-      Alert.alert('Erro', error.message || 'Não foi possível salvar');
-    }
-  };
+  const deliveryOptions = [
+    { id: 'moto', name: 'Moto', icon: '🏍️', color: '#FF6B6B', description: 'Entregas médias' },
+    { id: 'carro', name: 'Carro', icon: '🚙', color: '#4ECDC4', description: 'Entregas grandes' },
+    { id: 'bicicleta', name: 'Bicicleta', icon: '🚴', color: '#95E1D3', description: 'Entregas pequenas' },
+    { id: 'expresso', name: 'Expresso ⚡', icon: '⚡', color: '#FFB800', description: 'Urgente' },
+  ];
 
   const handleChoosePhoto = async () => {
     Alert.alert(
@@ -129,7 +79,7 @@ export default function ProfileScreen() {
             
             if (!result.canceled) {
               setProfileImage(result.assets[0].uri);
-              Alert.alert('✅ Sucesso', 'Foto atualizada com sucesso!');
+              Alert.alert('✅ Sucesso', 'Foto atualizada!');
             }
           },
         },
@@ -151,7 +101,7 @@ export default function ProfileScreen() {
             
             if (!result.canceled) {
               setProfileImage(result.assets[0].uri);
-              Alert.alert('✅ Sucesso', 'Foto atualizada com sucesso!');
+              Alert.alert('✅ Sucesso', 'Foto atualizada!');
             }
           },
         },
@@ -160,14 +110,64 @@ export default function ProfileScreen() {
     );
   };
 
-  const handleLogout = async () => {
+  const handleBecomeDriver = () => {
     Alert.alert(
-      'Sair',
-      'Tem certeza que deseja sair?',
+      '🚗 Quero ser Motorista',
+      'Você deseja ativar o modo Motorista e cadastrar seu veículo?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Sair',
+          text: 'Sim, quero!',
+          onPress: () => {
+            setAccountType('motorista');
+            Alert.alert('✅ Ótimo!', 'Agora selecione o tipo de veículo abaixo');
+          },
+        },
+      ]
+    );
+  };
+
+  const handleBecomeDelivery = () => {
+    Alert.alert(
+      '📦 Quero ser Entregador',
+      'Você deseja ativar o modo Entregador e cadastrar seu veículo?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sim, quero!',
+          onPress: () => {
+            setAccountType('entregador');
+            Alert.alert('✅ Ótimo!', 'Agora selecione o tipo de entrega abaixo');
+          },
+        },
+      ]
+    );
+  };
+
+  const handleSave = () => {
+    if (!name || !phone || !email) {
+      Alert.alert('Erro', 'Preencha os campos obrigatórios');
+      return;
+    }
+
+    setIsLoading(true);
+    // Simular salvamento
+    setTimeout(() => {
+      setIsLoading(false);
+      setIsEditing(false);
+      Alert.alert('✅ Sucesso', 'Perfil atualizado com sucesso!');
+    }, 1000);
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      '🚪 Sair da Conta',
+      'Deseja realmente sair da sua conta?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sim, sair',
+          style: 'destructive',
           onPress: async () => {
             await AuthService.logout();
             router.replace('/login');
@@ -177,105 +177,40 @@ export default function ProfileScreen() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.centerContainer]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Carregando seus dados...</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.avatarContainer} onPress={handleChoosePhoto}>
-          <View style={styles.avatarCircle}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
-            )}
-          </View>
-          <View style={styles.cameraButton}>
-            <Text style={styles.cameraIcon}>📷</Text>
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.headerGreeting}>Olá, {name.split(' ')[0]}!</Text>
-        <Text style={styles.headerSubtext}>Gerencie seu perfil</Text>
-      </View>
-
-      {/* User Type Selector - Only if has both registrations */}
-      {registrations.hasClienteRegistration && registrations.hasMotoristaRegistration && (
-        <View style={styles.userTypeSelectorContainer}>
-          <Text style={styles.sectionTitle}>Você está como:</Text>
-          <View style={styles.userTypeSelector}>
-            <TouchableOpacity
-              style={[
-                styles.userTypeButton,
-                userType === 'cliente' && styles.userTypeButtonActive,
-              ]}
-              onPress={() => setUserType('cliente')}
-            >
-              <Text
-                style={[
-                  styles.userTypeText,
-                  userType === 'cliente' && styles.userTypeTextActive,
-                ]}
-              >
-                👤 Cliente
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.userTypeButton,
-                userType === 'motorista' && styles.userTypeButtonActive,
-              ]}
-              onPress={() => setUserType('motorista')}
-            >
-              <Text
-                style={[
-                  styles.userTypeText,
-                  userType === 'motorista' && styles.userTypeTextActive,
-                ]}
-              >
-                🛵 Motorista
-              </Text>
-            </TouchableOpacity>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header com Foto */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.avatarContainer} onPress={handleChoosePhoto}>
+            <View style={styles.avatarCircle}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+              )}
+            </View>
+            <View style={styles.cameraButton}>
+              <Text style={styles.cameraIcon}>📷</Text>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.headerName}>{name}</Text>
+          <View style={styles.accountTypeBadge}>
+            <Text style={styles.accountTypeText}>
+              {accountType === 'cliente' ? '👤 Cliente' : 
+               accountType === 'motorista' ? '🚗 Motorista' : '📦 Entregador'}
+            </Text>
           </View>
         </View>
-      )}
 
-      <ScrollView style={styles.scrollView}>
-        {/* Stats Section */}
-        {userData?.stats && (
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{userData.stats.totalRides}</Text>
-              <Text style={styles.statLabel}>Corridas</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{userData.stats.rating.toFixed(1)} ⭐</Text>
-              <Text style={styles.statLabel}>Avaliação</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                {userType === 'motorista' 
-                  ? `R$ ${userData.stats.totalEarned?.toFixed(2) || '0.00'}`
-                  : `R$ ${userData.stats.totalSpent?.toFixed(2) || '0.00'}`}
-              </Text>
-              <Text style={styles.statLabel}>
-                {userType === 'motorista' ? 'Ganhos' : 'Gastos'}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Personal Info */}
+        {/* Informações Pessoais */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Informações Pessoais</Text>
+            <Text style={styles.sectionTitle}>📋 Informações Pessoais</Text>
             {!isEditing && (
               <TouchableOpacity onPress={() => setIsEditing(true)}>
                 <Text style={styles.editButton}>Editar</Text>
@@ -283,193 +218,269 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          <View style={styles.infoGroup}>
-            <Text style={styles.label}>Nome Completo</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder="Nome completo"
-              />
-            ) : (
-              <Text style={styles.value}>{name}</Text>
-            )}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nome Completo *</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={name}
+              onChangeText={setName}
+              placeholder="Seu nome completo"
+              editable={isEditing}
+            />
           </View>
 
-          <View style={styles.infoGroup}>
-            <Text style={styles.label}>Telefone</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Telefone"
-                keyboardType="phone-pad"
-              />
-            ) : (
-              <Text style={styles.value}>{phone}</Text>
-            )}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Telefone *</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="(00) 00000-0000"
+              keyboardType="phone-pad"
+              editable={isEditing}
+            />
           </View>
 
-          <View style={styles.infoGroup}>
-            <Text style={styles.label}>E-mail</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="E-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            ) : (
-              <Text style={styles.value}>{email}</Text>
-            )}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>E-mail *</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="seu@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={isEditing}
+            />
           </View>
 
-          <View style={styles.infoGroup}>
-            <Text style={styles.label}>Idade</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={age}
-                onChangeText={setAge}
-                placeholder="Idade"
-                keyboardType="numeric"
-              />
-            ) : (
-              <Text style={styles.value}>{age || 'Não informado'}</Text>
-            )}
-          </View>
-
-          <View style={styles.infoGroup}>
-            <Text style={styles.label}>Gênero</Text>
-            {isEditing ? (
-              <View style={styles.genderContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.genderButton,
-                    gender === 'masculino' && styles.genderButtonActive,
-                  ]}
-                  onPress={() => setGender('masculino')}
-                >
-                  <Text
-                    style={[
-                      styles.genderButtonText,
-                      gender === 'masculino' && styles.genderButtonTextActive,
-                    ]}
-                  >
-                    M
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.genderButton,
-                    gender === 'feminino' && styles.genderButtonActive,
-                  ]}
-                  onPress={() => setGender('feminino')}
-                >
-                  <Text
-                    style={[
-                      styles.genderButtonText,
-                      gender === 'feminino' && styles.genderButtonTextActive,
-                    ]}
-                  >
-                    F
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.genderButton,
-                    gender === 'outro' && styles.genderButtonActive,
-                  ]}
-                  onPress={() => setGender('outro')}
-                >
-                  <Text
-                    style={[
-                      styles.genderButtonText,
-                      gender === 'outro' && styles.genderButtonTextActive,
-                    ]}
-                  >
-                    Outro
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <Text style={styles.value}>
-                {gender === 'masculino' ? 'Masculino' :
-                 gender === 'feminino' ? 'Feminino' :
-                 gender === 'outro' ? 'Outro' : 'Não informado'}
-              </Text>
-            )}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>CPF</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={cpf}
+              onChangeText={setCpf}
+              placeholder="000.000.000-00"
+              keyboardType="numeric"
+              editable={isEditing}
+            />
           </View>
         </View>
 
-        {/* Address */}
+        {/* Endereço */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Endereço</Text>
+          <Text style={styles.sectionTitle}>📍 Endereço</Text>
 
-          <View style={styles.infoGroup}>
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Rua</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={street}
-                onChangeText={setStreet}
-                placeholder="Rua"
-              />
-            ) : (
-              <Text style={styles.value}>{street || 'Não informado'}</Text>
-            )}
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={street}
+              onChangeText={setStreet}
+              placeholder="Nome da rua"
+              editable={isEditing}
+            />
           </View>
 
-          <View style={styles.infoGroup}>
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Bairro</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={neighborhood}
-                onChangeText={setNeighborhood}
-                placeholder="Bairro"
-              />
-            ) : (
-              <Text style={styles.value}>{neighborhood || 'Não informado'}</Text>
-            )}
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={neighborhood}
+              onChangeText={setNeighborhood}
+              placeholder="Seu bairro"
+              editable={isEditing}
+            />
           </View>
 
-          <View style={styles.infoGroup}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Complemento</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={complement}
+              onChangeText={setComplement}
+              placeholder="Número, bloco, andar..."
+              editable={isEditing}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Referência</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+              value={reference}
+              onChangeText={setReference}
+              placeholder="Ex: Perto da escola, atrás do posto..."
+              editable={isEditing}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Cidade</Text>
-            <Text style={styles.value}>Xique-Xique, BA</Text>
+            <Text style={styles.staticText}>Xique-Xique, BA</Text>
           </View>
         </View>
 
+        {/* Botões de Salvar/Cancelar quando editando */}
         {isEditing && (
-          <View style={styles.editButtons}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={() => {
-                setIsEditing(false);
-                loadUserData();
-              }}
+          <View style={styles.section}>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity 
+                style={styles.cancelButton} 
+                onPress={() => setIsEditing(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.saveButton} 
+                onPress={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Seção: Mudar Tipo de Conta */}
+        {accountType === 'cliente' && !isEditing && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>💼 Quer trabalhar com a gente?</Text>
+            <Text style={styles.sectionSubtitle}>
+              Torne-se um parceiro do XiquêGo e comece a ganhar dinheiro!
+            </Text>
+
+            <TouchableOpacity 
+              style={[styles.becomeButton, { backgroundColor: '#4ECDC4' }]}
+              onPress={handleBecomeDriver}
             >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
+              <Text style={styles.becomeButtonIcon}>🚗</Text>
+              <View style={styles.becomeButtonContent}>
+                <Text style={styles.becomeButtonTitle}>Quero ser Motorista</Text>
+                <Text style={styles.becomeButtonSubtitle}>
+                  Transporte passageiros e ganhe por corrida
+                </Text>
+              </View>
+              <Text style={styles.becomeButtonArrow}>›</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
-              onPress={handleSave}
+
+            <TouchableOpacity 
+              style={[styles.becomeButton, { backgroundColor: '#FFB800' }]}
+              onPress={handleBecomeDelivery}
             >
-              <Text style={styles.saveButtonText}>Salvar</Text>
+              <Text style={styles.becomeButtonIcon}>📦</Text>
+              <View style={styles.becomeButtonContent}>
+                <Text style={styles.becomeButtonTitle}>Quero ser Entregador</Text>
+                <Text style={styles.becomeButtonSubtitle}>
+                  Faça entregas e ganhe por cada entrega
+                </Text>
+              </View>
+              <Text style={styles.becomeButtonArrow}>›</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>🚪 Sair da Conta</Text>
-        </TouchableOpacity>
+        {/* Seleção de Veículo (Motorista) */}
+        {accountType === 'motorista' && !isEditing && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🚗 Selecione seu Tipo de Veículo</Text>
+            <Text style={styles.sectionSubtitle}>
+              Escolha o(s) tipo(s) de serviço que você deseja oferecer
+            </Text>
 
-        <View style={{ height: 40 }} />
+            <View style={styles.vehicleGrid}>
+              {vehicleOptions.map((vehicle) => (
+                <TouchableOpacity
+                  key={vehicle.id}
+                  style={[
+                    styles.vehicleCard,
+                    selectedVehicle === vehicle.id && styles.vehicleCardSelected,
+                    { borderColor: vehicle.color },
+                  ]}
+                  onPress={() => {
+                    setSelectedVehicle(vehicle.id as VehicleType);
+                    Alert.alert('✅ Veículo selecionado!', `Você escolheu: ${vehicle.name}`);
+                  }}
+                >
+                  <Text style={styles.vehicleIcon}>{vehicle.icon}</Text>
+                  <Text style={styles.vehicleName}>{vehicle.name}</Text>
+                  <Text style={styles.vehicleDescription}>{vehicle.description}</Text>
+                  {selectedVehicle === vehicle.id && (
+                    <View style={[styles.selectedBadge, { backgroundColor: vehicle.color }]}>
+                      <Text style={styles.selectedBadgeText}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoIcon}>ℹ️</Text>
+              <Text style={styles.infoText}>
+                <Text style={{ fontWeight: 'bold' }}>Expresso Black</Text> é exclusivo para transporte 
+                de cargas, móveis e animais entre povoados e Xique-Xique.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Seleção de Entrega (Entregador) */}
+        {accountType === 'entregador' && !isEditing && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📦 Selecione seu Tipo de Entrega</Text>
+            <Text style={styles.sectionSubtitle}>
+              Escolha o(s) tipo(s) de entrega que você deseja fazer
+            </Text>
+
+            <View style={styles.vehicleGrid}>
+              {deliveryOptions.map((delivery) => (
+                <TouchableOpacity
+                  key={delivery.id}
+                  style={[
+                    styles.vehicleCard,
+                    selectedDelivery === delivery.id && styles.vehicleCardSelected,
+                    { borderColor: delivery.color },
+                  ]}
+                  onPress={() => {
+                    setSelectedDelivery(delivery.id as DeliveryType);
+                    Alert.alert('✅ Tipo selecionado!', `Você escolheu: ${delivery.name}`);
+                  }}
+                >
+                  <Text style={styles.vehicleIcon}>{delivery.icon}</Text>
+                  <Text style={styles.vehicleName}>{delivery.name}</Text>
+                  <Text style={styles.vehicleDescription}>{delivery.description}</Text>
+                  {selectedDelivery === delivery.id && (
+                    <View style={[styles.selectedBadge, { backgroundColor: delivery.color }]}>
+                      <Text style={styles.selectedBadgeText}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoIcon}>⚡</Text>
+              <Text style={styles.infoText}>
+                <Text style={{ fontWeight: 'bold' }}>Expresso</Text> é para entregas urgentes 
+                dentro da cidade, com prioridade máxima!
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Botão de Sair */}
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>🚪 Sair da Conta</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Espaçamento final */}
+        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );
@@ -478,22 +489,21 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F5F5F5',
   },
-  centerContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  scrollView: {
+    flex: 1,
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: COLORS.textLight,
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
     backgroundColor: COLORS.primary,
-    padding: 24,
+    padding: 30,
     paddingTop: 60,
     alignItems: 'center',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   avatarContainer: {
     position: 'relative',
@@ -535,179 +545,234 @@ const styles = StyleSheet.create({
   cameraIcon: {
     fontSize: 18,
   },
-  headerGreeting: {
-    fontSize: 26,
+  headerName: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.secondary,
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  headerSubtext: {
-    fontSize: 15,
-    color: COLORS.secondary,
-    opacity: 0.85,
+  accountTypeBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  userTypeSelectorContainer: {
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  userTypeSelector: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.gray,
-    borderRadius: 12,
-    padding: 4,
-  },
-  userTypeButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  userTypeButtonActive: {
-    backgroundColor: '#FFFFFF',
-  },
-  userTypeText: {
+  accountTypeText: {
     fontSize: 14,
-    color: COLORS.textLight,
     fontWeight: '600',
-  },
-  userTypeTextActive: {
-    color: COLORS.text,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
     color: COLORS.secondary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
   },
   section: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginTop: 8,
+    margin: 16,
+    marginBottom: 0,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: '#333',
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+    lineHeight: 20,
   },
   editButton: {
     fontSize: 16,
     color: COLORS.primary,
     fontWeight: '600',
   },
-  infoGroup: {
+  inputGroup: {
     marginBottom: 16,
   },
   label: {
     fontSize: 13,
-    color: COLORS.textLight,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F9F9F9',
     borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: COLORS.text,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  genderButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
-  },
-  genderButtonActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#FFF9E6',
-  },
-  genderButtonText: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    fontWeight: '500',
-  },
-  genderButtonTextActive: {
-    color: COLORS.secondary,
-    fontWeight: 'bold',
-  },
-  editButtons: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-    backgroundColor: '#FFFFFF',
-    marginTop: 8,
-  },
-  button: {
-    flex: 1,
-    padding: 16,
+    borderColor: '#E0E0E0',
     borderRadius: 12,
-    alignItems: 'center',
+    padding: 14,
+    fontSize: 15,
+    color: '#333',
+  },
+  inputDisabled: {
+    backgroundColor: '#FAFAFA',
+    color: '#666',
+  },
+  staticText: {
+    fontSize: 15,
+    color: '#333',
+    padding: 14,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
   },
   cancelButton: {
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
+    fontWeight: 'bold',
+    color: '#666',
   },
   saveButton: {
+    flex: 1,
     backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.secondary,
   },
-  logoutButton: {
-    backgroundColor: '#FF3B30',
-    marginHorizontal: 16,
-    marginTop: 24,
+  becomeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  becomeButtonIcon: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  becomeButtonContent: {
+    flex: 1,
+  },
+  becomeButtonTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  becomeButtonSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  becomeButtonArrow: {
+    fontSize: 32,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  vehicleGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  vehicleCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: '#E0E0E0',
+    borderRadius: 16,
     padding: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  vehicleCardSelected: {
+    backgroundColor: '#F0F9FF',
+  },
+  vehicleIcon: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+  vehicleName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  vehicleDescription: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  selectedBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
     borderRadius: 12,
+    justifyContent: 'center',
     alignItems: 'center',
   },
+  selectedBadgeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF9E6',
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  infoIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 20,
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    padding: 18,
+    alignItems: 'center',
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   logoutButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
