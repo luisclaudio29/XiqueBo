@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { COLORS } from '@/constants/colors';
+import { getPovoads, SEDE_XIQUE_XIQUE } from '@/constants/povoados';
 
 interface MapViewComponentProps {
   origin?: string;
@@ -104,6 +105,25 @@ export function MapViewComponent({ origin, destination, onLocationSelected }: Ma
             pinColor={COLORS.primary}
           />
         )}
+        
+        {/* Marcador da Sede de Xique-Xique */}
+        <Marker
+          coordinate={SEDE_XIQUE_XIQUE}
+          title="Xique-Xique (Sede)"
+          description="Centro da cidade"
+          pinColor="#FFB800"
+        />
+        
+        {/* Marcadores dos Povoados */}
+        {getPovoads().map((povoado) => (
+          <Marker
+            key={povoado.id}
+            coordinate={povoado.coordenadas}
+            title={povoado.nome}
+            description={`${povoado.distanciaXiqueXique}km da sede • ${povoado.tempoEstimado}min`}
+            pinColor="#4ECDC4"
+          />
+        ))}
       </MapView>
 
       {/* Location Button */}

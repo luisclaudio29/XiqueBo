@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
@@ -15,6 +16,8 @@ import { useState, useEffect } from 'react';
 import AuthService from '@/services/auth.service';
 import { UserData, Gender } from '@/types/user.types';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+import { getPovoadsNomes } from '@/constants/povoados';
 
 type AccountType = 'cliente' | 'motorista' | 'entregador';
 type VehicleType = 'moto' | 'carro' | 'mototaxi' | 'moto_normal' | 'expresso_black';
@@ -32,9 +35,11 @@ export default function ProfileScreen() {
   const [cpf, setCpf] = useState('');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [povoado, setPovoado] = useState('');
   const [complement, setComplement] = useState('');
   const [reference, setReference] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [showPovoadoModal, setShowPovoadoModal] = useState(false);
   
   // Tipo de conta
   const [accountType, setAccountType] = useState<AccountType>('cliente');
@@ -89,9 +94,9 @@ export default function ProfileScreen() {
             const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (!permission.granted) {
               Alert.alert('Permissão negada', 'Precisamos de acesso à galeria');
-              return;
-            }
-            
+        return;
+      }
+      
             const result = await ImagePicker.launchImageLibraryAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
@@ -144,19 +149,37 @@ export default function ProfileScreen() {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name || !phone || !email) {
       Alert.alert('Erro', 'Preencha os campos obrigatórios');
       return;
     }
 
     setIsLoading(true);
-    // Simular salvamento
-    setTimeout(() => {
+    try {
+      await AuthService.updateCurrentUser({
+        name,
+        phone,
+        email,
+        cpf,
+        address: {
+          street,
+          neighborhood,
+          povoado,
+          complement,
+          reference,
+          city: 'Xique-Xique',
+          state: 'BA',
+          zipCode: '',
+        },
+      });
       setIsLoading(false);
       setIsEditing(false);
       Alert.alert('✅ Sucesso', 'Perfil atualizado com sucesso!');
-    }, 1000);
+    } catch (error) {
+      setIsLoading(false);
+      Alert.alert('Erro', 'Não foi possível salvar as alterações');
+    }
   };
 
   const handleLogout = () => {
@@ -185,13 +208,13 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header com Foto */}
-        <View style={styles.header}>
+      <View style={styles.header}>
           <TouchableOpacity style={styles.avatarContainer} onPress={handleChoosePhoto}>
-            <View style={styles.avatarCircle}>
+        <View style={styles.avatarCircle}>
               {profileImage ? (
                 <Image source={{ uri: profileImage }} style={styles.avatarImage} />
               ) : (
-                <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+          <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
               )}
             </View>
             <View style={styles.cameraButton}>
@@ -203,9 +226,9 @@ export default function ProfileScreen() {
             <Text style={styles.accountTypeText}>
               {accountType === 'cliente' ? '👤 Cliente' : 
                accountType === 'motorista' ? '🚗 Motorista' : '📦 Entregador'}
-            </Text>
+              </Text>
+            </View>
           </View>
-        </View>
 
         {/* Informações Pessoais */}
         <View style={styles.section}>
@@ -220,48 +243,48 @@ export default function ProfileScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nome Completo *</Text>
-            <TextInput
+              <TextInput
               style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={name}
-              onChangeText={setName}
+                value={name}
+                onChangeText={setName}
               placeholder="Seu nome completo"
               editable={isEditing}
-            />
+              />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Telefone *</Text>
-            <TextInput
+              <TextInput
               style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={phone}
-              onChangeText={setPhone}
+                value={phone}
+                onChangeText={setPhone}
               placeholder="(00) 00000-0000"
-              keyboardType="phone-pad"
+                keyboardType="phone-pad"
               editable={isEditing}
-            />
+              />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>E-mail *</Text>
-            <TextInput
+              <TextInput
               style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={email}
-              onChangeText={setEmail}
+                value={email}
+                onChangeText={setEmail}
               placeholder="seu@email.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
+                keyboardType="email-address"
+                autoCapitalize="none"
               editable={isEditing}
-            />
+              />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>CPF</Text>
-            <TextInput
+              <TextInput
               style={[styles.input, !isEditing && styles.inputDisabled]}
               value={cpf}
               onChangeText={setCpf}
               placeholder="000.000.000-00"
-              keyboardType="numeric"
+                keyboardType="numeric"
               editable={isEditing}
             />
           </View>
@@ -273,24 +296,45 @@ export default function ProfileScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Rua</Text>
-            <TextInput
+              <TextInput
               style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={street}
-              onChangeText={setStreet}
+                value={street}
+                onChangeText={setStreet}
               placeholder="Nome da rua"
+              editable={isEditing}
+              />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Bairro</Text>
+              <TextInput
+              style={[styles.input, !isEditing && styles.inputDisabled]}
+                value={neighborhood}
+                onChangeText={setNeighborhood}
+              placeholder="Seu bairro"
               editable={isEditing}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Bairro</Text>
-            <TextInput
-              style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={neighborhood}
-              onChangeText={setNeighborhood}
-              placeholder="Seu bairro"
-              editable={isEditing}
-            />
+            <Text style={styles.label}>Povoado (opcional)</Text>
+            {isEditing ? (
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={() => setShowPovoadoModal(true)}
+              >
+                <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
+                  {povoado || 'Selecione seu povoado'}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
+              </TouchableOpacity>
+            ) : (
+              <TextInput
+                style={[styles.input, styles.inputDisabled]}
+                value={povoado || 'Sede (Centro)'}
+                editable={false}
+              />
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -325,15 +369,15 @@ export default function ProfileScreen() {
         {isEditing && (
           <View style={styles.section}>
             <View style={styles.actionButtons}>
-              <TouchableOpacity 
+            <TouchableOpacity
                 style={styles.cancelButton} 
                 onPress={() => setIsEditing(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
                 style={styles.saveButton} 
-                onPress={handleSave}
+              onPress={handleSave}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -474,14 +518,64 @@ export default function ProfileScreen() {
 
         {/* Botão de Sair */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>🚪 Sair da Conta</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>🚪 Sair da Conta</Text>
+        </TouchableOpacity>
         </View>
 
         {/* Espaçamento final */}
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Modal de Seleção de Povoado */}
+      <Modal
+        visible={showPovoadoModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowPovoadoModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecione o Povoado</Text>
+              <TouchableOpacity onPress={() => setShowPovoadoModal(false)}>
+                <Ionicons name="close" size={28} color={COLORS.grayDark} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalList}>
+              <TouchableOpacity
+                style={styles.modalItem}
+                onPress={() => {
+                  setPovoado('');
+                  setShowPovoadoModal(false);
+                }}
+              >
+                <Text style={styles.modalItemText}>Xique-Xique (Sede)</Text>
+                {!povoado && (
+                  <Ionicons name="checkmark" size={24} color={COLORS.primary} />
+                )}
+              </TouchableOpacity>
+              
+              {getPovoadsNomes().map((nome) => (
+                <TouchableOpacity
+                  key={nome}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setPovoado(nome);
+                    setShowPovoadoModal(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{nome}</Text>
+                  {povoado === nome && (
+                    <Ionicons name="checkmark" size={24} color={COLORS.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -775,5 +869,64 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  selectButton: {
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectButtonText: {
+    fontSize: 16,
+    color: COLORS.grayDark,
+  },
+  selectButtonTextSelected: {
+    fontSize: 16,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 24,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  modalList: {
+    paddingHorizontal: 20,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray,
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: COLORS.text,
   },
 });

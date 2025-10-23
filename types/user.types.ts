@@ -5,9 +5,11 @@ export interface UserAddress {
   street: string;
   neighborhood: string;
   city: string;
+  povoado?: string; // Povoado de Xique-Xique (opcional)
   state: string;
   zipCode: string;
   complement?: string;
+  reference?: string; // Ponto de referência
 }
 
 export interface UserData {

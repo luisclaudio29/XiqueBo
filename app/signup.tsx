@@ -9,12 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/colors';
 import AuthService from '@/services/auth.service';
 import { Gender } from '@/types/user.types';
+import { getPovoadsNomes, findPovoado } from '@/constants/povoados';
 
 type UserType = 'cliente' | 'motorista' | 'entregador' | null;
 
@@ -33,6 +35,8 @@ export default function SignUpScreen() {
   const [gender, setGender] = useState<Gender>('prefiro-nao-informar');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [povoado, setPovoado] = useState('');
+  const [showPovoadoModal, setShowPovoadoModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async () => {
@@ -84,10 +88,11 @@ export default function SignUpScreen() {
         userType,
         age: userAge,
         gender,
-        address: street || neighborhood ? {
+        address: street || neighborhood || povoado ? {
           street,
           neighborhood,
           city: 'Xique-Xique',
+          povoado: povoado || undefined,
           state: 'BA',
           zipCode: '',
         } : undefined,
@@ -328,6 +333,67 @@ export default function SignUpScreen() {
             onChangeText={setNeighborhood}
           />
 
+          <Text style={styles.label}>Povoado (opcional)</Text>
+          <TouchableOpacity
+            style={styles.selectButton}
+            onPress={() => setShowPovoadoModal(true)}
+          >
+            <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
+              {povoado || 'Selecione seu povoado'}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
+          </TouchableOpacity>
+
+          {/* Modal de Seleção de Povoado */}
+          <Modal
+            visible={showPovoadoModal}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowPovoadoModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Selecione o Povoado</Text>
+                  <TouchableOpacity onPress={() => setShowPovoadoModal(false)}>
+                    <Ionicons name="close" size={28} color={COLORS.grayDark} />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView style={styles.modalList}>
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setPovoado('');
+                      setShowPovoadoModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalItemText}>Xique-Xique (Sede)</Text>
+                    {!povoado && (
+                      <Ionicons name="checkmark" size={24} color={COLORS.primary} />
+                    )}
+                  </TouchableOpacity>
+                  
+                  {getPovoadsNomes().map((nome) => (
+                    <TouchableOpacity
+                      key={nome}
+                      style={styles.modalItem}
+                      onPress={() => {
+                        setPovoado(nome);
+                        setShowPovoadoModal(false);
+                      }}
+                    >
+                      <Text style={styles.modalItemText}>{nome}</Text>
+                      {povoado === nome && (
+                        <Ionicons name="checkmark" size={24} color={COLORS.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          </Modal>
+
           <TouchableOpacity 
             style={[styles.signUpButton, isLoading && styles.signUpButtonDisabled]} 
             onPress={handleSignUp}
@@ -505,5 +571,65 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: 'bold',
+  },
+  selectButton: {
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectButtonText: {
+    fontSize: 16,
+    color: COLORS.grayDark,
+  },
+  selectButtonTextSelected: {
+    fontSize: 16,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 24,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  modalList: {
+    paddingHorizontal: 20,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray,
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: COLORS.text,
   },
 });

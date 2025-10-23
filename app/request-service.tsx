@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,7 @@ import {
   XIQUE_DISTRICTS,
   PRICING,
 } from '@/types/ride.types';
+import { getLocalidadesCompletas, findPovoado, SEDE_XIQUE_XIQUE } from '@/constants/povoados';
 
 export default function RequestServiceScreen() {
   const router = useRouter();
@@ -41,6 +43,8 @@ export default function RequestServiceScreen() {
   const [destinationSearch, setDestinationSearch] = useState('');
   const [searchingOrigin, setSearchingOrigin] = useState(false);
   const [searchingDestination, setSearchingDestination] = useState(false);
+  const [showOriginModal, setShowOriginModal] = useState(false);
+  const [showDestinationModal, setShowDestinationModal] = useState(false);
   
   // Cálculos
   const [distance, setDistance] = useState(0);
@@ -94,6 +98,26 @@ export default function RequestServiceScreen() {
       }
     } catch (error) {
       console.error('Erro ao obter localização:', error);
+    }
+  };
+
+  const selectLocalidade = (localidade: any, isOrigin: boolean) => {
+    const location: LocationType = {
+      address: localidade.nome,
+      latitude: localidade.coordenadas.latitude,
+      longitude: localidade.coordenadas.longitude,
+      city: 'Xique-Xique',
+      district: localidade.tipo === 'povoado' ? localidade.nome : undefined,
+    };
+
+    if (isOrigin) {
+      setOrigin(location);
+      setOriginSearch(localidade.nome);
+      setShowOriginModal(false);
+    } else {
+      setDestination(location);
+      setDestinationSearch(localidade.nome);
+      setShowDestinationModal(false);
     }
   };
 
