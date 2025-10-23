@@ -17,6 +17,8 @@ export interface Povoado {
   tempoEstimado: number; // em minutos da sede
   populacaoAprox: number;
   principais: string[]; // pontos de referência
+  temInternet?: boolean; // Se tem cobertura de Wi-Fi/Internet
+  observacoes?: string; // Informações adicionais
 }
 
 /**
@@ -38,6 +40,8 @@ export const POVOADOS_XIQUE_XIQUE: Povoado[] = [
     tempoEstimado: 20,
     populacaoAprox: 450,
     principais: ['Igreja Católica', 'Escola Municipal', 'Posto de Saúde'],
+    temInternet: true,
+    observacoes: 'Tem cobertura Wi-Fi via empresa de Xique-Xique. Algumas residências já contrataram.',
   },
   {
     id: 'rumo-novo',
@@ -136,6 +140,8 @@ export const POVOADOS_XIQUE_XIQUE: Povoado[] = [
     tempoEstimado: 19,
     populacaoAprox: 190,
     principais: ['Igreja', 'Escola'],
+    temInternet: true,
+    observacoes: 'Tem cobertura Wi-Fi. Algumas residências já contrataram plano de internet.',
   },
   {
     id: 'rumo',
