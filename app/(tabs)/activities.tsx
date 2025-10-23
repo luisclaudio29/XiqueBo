@@ -19,37 +19,9 @@ interface Activity {
 }
 
 export default function ActivitiesScreen() {
-  const activities: Activity[] = [
-    {
-      id: '1',
-      type: 'corrida',
-      origin: 'Rua Principal, Centro',
-      destination: 'Av. Getúlio Vargas',
-      date: '2024-10-20 14:30',
-      status: 'concluida',
-      value: 12.50,
-      driver: 'João Silva',
-    },
-    {
-      id: '2',
-      type: 'corrida',
-      origin: 'Casa',
-      destination: 'Shopping',
-      date: '2024-10-19 10:15',
-      status: 'concluida',
-      value: 18.00,
-      driver: 'Maria Santos',
-    },
-    {
-      id: '3',
-      type: 'corrida',
-      origin: 'Trabalho',
-      destination: 'Casa',
-      date: '2024-10-18 18:45',
-      status: 'cancelada',
-      value: 15.00,
-    },
-  ];
+  // Array vazio - sem dados fictícios
+  // Quando o usuário fizer corridas/entregas, elas aparecerão aqui
+  const activities: Activity[] = [];
 
   const getStatusColor = (status: Activity['status']) => {
     switch (status) {
@@ -87,8 +59,22 @@ export default function ActivitiesScreen() {
 
       {/* Activities List */}
       <ScrollView style={styles.content}>
-        {activities.map((activity) => (
-          <TouchableOpacity key={activity.id} style={styles.activityCard}>
+        {activities.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateIcon}>📋</Text>
+            <Text style={styles.emptyStateTitle}>Nenhuma atividade ainda</Text>
+            <Text style={styles.emptyStateText}>
+              Suas corridas e entregas aparecerão aqui quando você começar a usar o XiquêGo
+            </Text>
+            <View style={styles.emptyStateHint}>
+              <Text style={styles.emptyStateHintText}>
+                💡 Dica: Toque em "Início" para solicitar sua primeira corrida!
+              </Text>
+            </View>
+          </View>
+        ) : (
+          activities.map((activity) => (
+            <TouchableOpacity key={activity.id} style={styles.activityCard}>
             <View style={styles.activityHeader}>
               <View style={styles.activityTypeContainer}>
                 <Text style={styles.activityTypeIcon}>
@@ -144,7 +130,8 @@ export default function ActivitiesScreen() {
               <Text style={styles.driverName}>Motorista: {activity.driver}</Text>
             )}
           </TouchableOpacity>
-        ))}
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -278,6 +265,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textLight,
     marginTop: 8,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 80,
+    marginBottom: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  emptyStateHint: {
+    backgroundColor: COLORS.primary + '10',
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+  },
+  emptyStateHintText: {
+    fontSize: 14,
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
