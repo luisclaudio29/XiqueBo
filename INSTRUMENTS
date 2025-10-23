@@ -1,0 +1,524 @@
+Funcionalidades Completas do XIQUEBO – App que Move Xique-Xique
+0. Tela de Entrada / Splash Screen
+
+Ao abrir o app:
+
+Exibe logo do XIQUEBO centralizada com o nome do app abaixo.
+
+Animação de transição (similar ao Netflix) para tela de login.
+
+Transição: fade-in/fade-out suave para tela de login.
+
+Front-end: fundo limpo, cores do app, logo central, animação leve para impacto visual.
+
+1. Tela de Login
+
+Opções de login:
+
+Número de celular + senha.
+
+Facebook.
+
+E-mail + senha.
+
+Botão “Esqueci minha senha”.
+
+Link para cadastro de novos usuários (cliente ou motorista).
+
+Tela responsiva, limpa, intuitiva, com animação de transição suave para a barra inferior ou menu inicial.
+
+Funcionalidades clicáveis:
+
+“Entrar” → valida usuário e envia para o app.
+
+“Esqueci minha senha” → abre fluxo de recuperação.
+
+“Cadastrar-se” → abre cadastro diferenciado.
+
+“Login via Facebook” → autenticação OAuth.
+
+“Login via E-mail” → formulário de e-mail + senha.
+
+2. Barra Inferior (Menu Principal) – 4 Opções
+
+A barra inferior terá quatro opções fixas, diferenciadas por tipo de usuário:
+
+2.1 Início (Página Inicial)
+
+Tela inicial adaptável conforme cadastro(s) do usuário.
+
+SISTEMA DE EXIBIÇÃO ADAPTATIVO:
+
+Se tem APENAS cadastro de CLIENTE:
+  - Saudação: "Olá, Cliente! 👋"
+  - Mapa mostra Pontos de Interesse (festas, restaurantes, lazer, hospitais, escolas)
+  - NÃO mostra seletor Cliente/Motorista
+  - Pode solicitar corridas normalmente
+
+Se tem APENAS cadastro de MOTORISTA:
+  - Saudação: "Olá, Motorista João! 👋"
+  - Mapa mostra Demanda e Alertas (lugares mais/menos pedidos, segurança)
+  - NÃO mostra seletor Cliente/Motorista
+  - Vê informações estratégicas para trabalho
+
+Se tem AMBOS os cadastros:
+  - Mostra seletor Cliente/Motorista
+  - Pode alternar entre os dois livremente
+  - Mapa e conteúdo mudam conforme seleção
+  - Total flexibilidade de uso
+
+MAPA INTELIGENTE:
+
+Para Motoristas:
+  - Demanda de corridas por região
+  - Lugares mais pedidos
+  - Alertas de segurança
+  - Horários de pico
+
+Para Clientes:
+  - Eventos e festas
+  - Restaurantes 5 estrelas
+  - Lanchonetes famosas
+  - Lazer (parque aquático, etc)
+  - Hospitais e clínicas
+  - Escolas
+  - Horários de pico
+
+SUGESTÕES INTELIGENTES:
+
+Ao clicar em Origem/Destino:
+  - Localização GPS atual
+  - Endereços favoritos
+  - Lugares populares de Xique-Xique
+
+Funções clicáveis:
+
+"Solicitar Corrida/Entrega" → formulário de origem, destino, tipo de serviço.
+
+"Localização Atual" → usa GPS automático.
+
+"Sugestões de Destino" → locais favoritos e populares.
+
+"Histórico Rápido" → últimas corridas ou entregas.
+
+2.2 Opções (Menu Hamburger)
+
+Menu lateral com subopções, diferentes para motoristas e clientes.
+
+Para Motoristas / Ciclistas / Motoqueiros:
+
+Perfil do motorista → editar foto, documentos, veículo.
+
+Disponibilidade → online/offline.
+
+Histórico de corridas/entregas.
+
+Ganhos → relatório de valor recebido e comissão da empresa (2%).
+
+Cancelamentos → regras, taxas de cancelamento.
+
+Diretrizes e Compromisso da Empresa → políticas e direitos do motorista.
+
+Ajuda / Suporte → chat, FAQ.
+
+Para Clientes:
+
+Perfil do cliente → editar foto, telefone, e-mail, preferências.
+
+Histórico de corridas → todas as viagens realizadas.
+
+Cancelamentos → regras e cobranças (1% sobre valor da corrida).
+
+Diretrizes e Compromisso da Empresa → políticas e direitos do cliente.
+
+Ajuda / Suporte → chat, FAQ.
+
+Funcionalidades clicáveis (Todos Usuários):
+
+Configurações → notificações, idioma, senha.
+
+Contato de emergência → ligação rápida.
+
+Compartilhar app → Sistema de indicação com descontos.
+
+SISTEMA DE INDICAÇÃO (Tela: /share-app):
+
+Cada usuário tem código único de indicação
+
+Para quem INDICA:
+  - 5% de desconto a cada 5 pessoas que completarem uma corrida
+  - Validação: as 5 pessoas precisam fazer login E completar 1 corrida
+  - Dashboard de progresso em tempo real
+
+Para quem é INDICADO:
+  - 12% de desconto na primeira corrida ou entrega
+  - Automático ao usar código de indicação no cadastro
+
+Link de compartilhamento automático:
+  - https://xiquego.app/download?ref=[CODIGO]
+  - Mensagem pré-formatada para WhatsApp/redes sociais
+
+2.3 Perfil
+
+Dados pessoais: nome, foto, telefone, e-mail.
+
+Preferências de pagamento (cartão ou Pix, sem assinatura digital).
+
+Contato de emergência.
+
+Funcionalidades clicáveis:
+
+“Editar Perfil”
+
+“Alterar Senha”
+
+“Atualizar Documentos”
+
+“Adicionar endereço favorito”
+
+“Adicionar número de emergência”
+
+2.4 Atividades
+
+Mostra atividades recentes: corridas, entregas, serviços.
+
+Diferenciado por tipo de usuário:
+
+Cliente → suas corridas e entregas.
+
+Motorista / Ciclista / Motoqueiro → corridas aceitas, concluídas, canceladas.
+
+Funcionalidades clicáveis:
+
+“Detalhes da Corrida”
+
+“Avaliar Usuário” / “Avaliar Motorista”
+
+“Cancelar Corrida” → política 1% sobre valor
+
+“Rota e localização” → abrir no mapa
+
+3. Cadastro
+
+Cadastro diferenciado:
+
+Cliente
+
+Motorista / Motoqueiro / Ciclista
+
+Validação de documentos para motoristas (CNH, veículo, foto).
+
+Escolha de tipo de transporte: carro, moto, bicicleta.
+
+Tela de cadastro intuitiva com campos obrigatórios e validação em tempo real.
+
+Funcionalidades clicáveis:
+
+“Enviar Documentos”
+
+“Confirmar Cadastro”
+
+“Selecionar Tipo de Transporte”
+
+4. Solicitação de Corridas / Entregas
+
+Entrada de origem e destino.
+
+Escolha de tipo de corrida: comum, expressa, com bagagem, pets, prioridade.
+
+SELEÇÃO DE FORMA DE PAGAMENTO (ANTECIPADA):
+  - Cliente escolhe ANTES de solicitar a corrida
+  - Opções: PIX, Cartão de Crédito, Cartão de Débito, Dinheiro
+  - Seleção obrigatória para prosseguir
+  - Visual em grid 2x2 clicável
+
+SISTEMA DE VOUCHER/CUPOM:
+  - Campo para inserir código de desconto
+  - Tipos de voucher:
+    • Percentual (ex: 10% OFF)
+    • Valor fixo (ex: R$ 5 OFF)
+    • Primeira corrida (ex: 12% OFF)
+    • Indicação (ex: 5% OFF)
+  - Validações:
+    • Código existe e está ativo
+    • Não expirado
+    • Limite de uso respeitado
+    • Condições especiais (primeira corrida, valor mínimo)
+  - Resumo em tempo real:
+    • Valor original
+    • Desconto aplicado
+    • Valor final
+
+Vouchers pré-cadastrados:
+  - PRIMEIRA: 12% OFF (primeira corrida)
+  - BEM-VINDO: 10% OFF (máx R$ 15, 3 usos)
+  - XIQUE5: R$ 5 OFF (mín R$ 20, 1 uso)
+  - FERIADO: 20% OFF (máx R$ 25, 5 usos)
+
+Estimativa de valor da corrida (com desconto se aplicável).
+
+Rastreamento em tempo real pelo GPS.
+
+Cancelamento: 1% do valor adicionado à próxima corrida.
+
+Funcionalidades clicáveis:
+
+“Confirmar Corrida”
+
+“Cancelar Corrida”
+
+“Compartilhar Corrida”
+
+“Avaliar Corrida/Motorista”
+
+“Selecionar Extras” (bagagem, pets, prioridade, assistência idoso)
+
+5. Motoristas e Entregadores
+
+Recebem solicitações próximas.
+
+Histórico detalhado de corridas/entregas.
+
+Disponibilidade online/offline.
+
+Avaliação de clientes após corrida.
+
+Submenus no “hambúrguer”:
+
+Configurações de motorista/categoria.
+
+Ganhos e relatórios.
+
+Cancelamentos → regras e taxas.
+
+6. Pagamentos
+
+SISTEMA COMPLETO DE PAGAMENTOS INTEGRADO COM MERCADO PAGO
+
+Opções de pagamento implementadas:
+  - PIX (QR Code + Copia e Cola)
+  - Cartão de Crédito/Débito (todas as bandeiras, até 12x)
+  - Dinheiro (confirmação pelo motorista)
+
+Comissão da empresa: 2% sobre todas as transações
+
+Telas implementadas:
+  - /payment-selection → Escolha do método
+  - /payment-pix → Pagamento via PIX
+  - /payment-card → Pagamento com cartão
+  - /payment-cash → Pagamento em dinheiro
+
+Segurança:
+  - Credenciais em arquivo .env (protegido)
+  - Criptografia HTTPS
+  - Tokenização de cartão
+  - Bloqueio de vale-refeição/alimentação
+
+BINs bloqueados (não aceitos):
+  - 506699 (Alelo)
+  - 637036 (Ben)
+  - 650485 (VR)
+  - 603788 (Sodexo)
+  - 637568 (Ticket)
+
+Sistema de logs e auditoria:
+  - Todos os pagamentos são registrados
+  - Logs salvos localmente
+  - Auto-limpeza de logs antigos (>30 dias)
+  - Exportação para auditoria
+
+Cálculo de comissão automático:
+  Valor total: R$ 100,00
+  ├── Motorista: R$ 98,00 (98%)
+  └── Empresa: R$ 2,00 (2%)
+
+PAGAMENTOS PARA MOTORISTAS/CICLISTAS/MOTOQUEIROS:
+
+Sistema específico de saque (Tela: /driver-payments)
+
+Saque mínimo: R$ 127,00
+
+Pagamento APENAS via PIX
+
+Processamento em até 24 horas
+
+Comissão de 2% já descontada do saldo exibido
+
+Funcionalidades clicáveis:
+
+"Visualizar Extrato"
+
+"Solicitar Saque"
+
+"Alterar Chave PIX"
+
+"Histórico de Transações"
+
+"Recarga de Saldo"
+
+"Alterar Forma de Pagamento"
+
+7. Cancelamentos e Suporte
+
+Política de cancelamento: 1% sobre valor da corrida.
+
+Aplicável também a motoristas (regras internas).
+
+Suporte integrado via chat ou FAQ.
+
+Funcionalidades clicáveis:
+
+“Abrir Chat”
+
+“Ver FAQ”
+
+“Relatar Problema”
+
+8. GPS, Rotas e Cobertura
+
+GPS integrado e otimizado para motoristas, ciclistas e motoqueiros.
+
+Funcionalidade offline: permite solicitar corrida sem internet, sincronizando depois.
+
+Cobertura: Xique-Xique e povoados próximos (Perto Velha, Iguira, Nova Iguira, Rumo, Mato Grosso, Vicente, etc.).
+
+Funcionalidades clicáveis:
+
+“Ver Rota no Mapa”
+
+“Seguir GPS”
+
+“Atualizar Localização”
+
+“Traçar Rota Alternativa”
+
+9. Tipos de Corrida e Categorias de Usuários
+
+Clientes a partir de 16 anos.
+
+Transporte de pessoas, pets, malas grandes/compras volumosas, idosos com prioridade ou assistência.
+
+Tipos de motorista: carro, moto, bicicleta.
+
+Funcionalidades clicáveis:
+
+“Selecionar Tipo de Transporte”
+
+“Adicionar Pet”
+
+“Adicionar Bagagem/Compra Grande”
+
+“Assistência Idoso”
+
+10. Diretrizes e Compromissos da Empresa
+
+Localizado no menu hamburger ou em cada seção relevante.
+
+Para motoristas:
+
+Pagamentos transparentes (2% comissão).
+
+Direitos a suporte.
+
+Regras sobre cancelamentos e disponibilidade.
+
+Para clientes:
+
+Corridas seguras e confiáveis.
+
+Atendimento a necessidades especiais, pets e bagagens.
+
+Motoristas validados.
+
+Funcionalidades clicáveis:
+
+“Ver Diretrizes Completas”
+
+“Contato com Suporte”
+
+“Relatar Problema”
+
+11. Suporte e FAQ
+
+Chat integrado com atendimento rápido.
+
+Perguntas frequentes sobre corridas, pagamentos e regras.
+
+CENTRAL DE AJUDA (Tela: /help-center):
+
+Busca em tempo real nas perguntas frequentes
+
+Contato rápido via WhatsApp e E-mail
+
+FAQ organizado por categorias:
+  - Corridas
+  - Cancelamento
+  - Pagamento
+  - Motoristas
+  - Indicações
+
+Perguntas incluídas:
+  - Como solicitar uma corrida?
+  - Qual é a taxa de cancelamento? (1%)
+  - Como funciona o pagamento?
+  - Qual é a comissão da empresa? (2%)
+  - Como me tornar um motorista?
+  - Como funciona o programa de indicação?
+  - Qual é o valor mínimo para saque? (R$ 127,00)
+  - Posso transportar pets?
+
+Funcionalidades clicáveis:
+
+"Abrir Chat"
+
+"Ver FAQ"
+
+"Enviar Feedback"
+
+"Buscar Ajuda"
+
+"Contato WhatsApp"
+
+"Contato E-mail"
+
+12. Seleção de Idioma (Tela: /language)
+
+Idiomas disponíveis:
+  - Português (Brasil) - Padrão
+  - English (US)
+  - Español
+  - Français
+
+Interface visual com bandeiras
+
+Indicador de seleção ativo
+
+Fácil expansão para novos idiomas
+
+Funcionalidades clicáveis:
+
+"Selecionar Idioma"
+
+13. Menu Totalmente Funcional
+
+TODAS as opções do menu agora são clicáveis:
+
+Minha Conta:
+  - Meu Perfil → Navega para perfil
+  - Histórico → Navega para atividades
+  - Pagamentos → Sistema de pagamentos
+
+Configurações:
+  - Notificações → Em desenvolvimento
+  - Idioma → Seleção de idioma
+  - Privacidade → Em desenvolvimento
+
+Suporte:
+  - Central de Ajuda → FAQ completo
+  - Fale Conosco → Contato direto
+  - Relatar Problema → Formulário
+
+Sobre:
+  - Diretrizes → Políticas da empresa
+  - Compartilhar App → Sistema de indicação
+  - Sobre XiquêGo → Informações da versão
