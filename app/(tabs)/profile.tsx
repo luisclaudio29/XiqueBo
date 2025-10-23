@@ -46,6 +46,13 @@ export default function ProfileScreen() {
   
   // Detecção de localização
   const [localizacaoDetectada, setLocalizacaoDetectada] = useState<string | null>(null);
+  const [enderecoCompleto, setEnderecoCompleto] = useState<{
+    rua: string;
+    numero: string;
+    bairro: string;
+    povoado: string;
+    nomesAlternativos: string[];
+  } | null>(null);
   const [povoadoSugerido, setPovoadoSugerido] = useState<string | null>(null);
   const [mostrarSugestao, setMostrarSugestao] = useState(false);
   
@@ -84,24 +91,91 @@ export default function ProfileScreen() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
+      // Descrição básica
       const descricao = getDescricaoLocalizacao(latitude, longitude);
       setLocalizacaoDetectada(descricao);
 
-      const deteccao = detectarPovoadoProximo(latitude, longitude);
-      
-      if (deteccao.dentroDaArea) {
-        const nomeDetectado = deteccao.povoado
-          ? (deteccao.povoado.nomePopular
-              ? `${deteccao.povoado.nome} (${deteccao.povoado.nomePopular})`
-              : deteccao.povoado.nome)
-          : '';
+      // Reverse geocoding com Google Maps API
+      try {
+        const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (apiKey) {
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&language=pt-BR`
+          );
+          const data = await response.json();
 
-        const povoadoAtual = showOutroPovoado ? outroPovoado : getNomeOficial(povoado);
-        
-        if (nomeDetectado && nomeDetectado !== povoadoAtual) {
-          setPovoadoSugerido(nomeDetectado);
-          setMostrarSugestao(true);
+          if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+            const addressComponents = result.address_components;
+
+            let rua = '';
+            let numero = '';
+            let bairro = '';
+            let nomesAlternativos: string[] = [];
+
+            // Extrai componentes do endereço
+            addressComponents.forEach((component: any) => {
+              if (component.types.includes('route')) {
+                rua = component.long_name;
+              }
+              if (component.types.includes('street_number')) {
+                numero = component.long_name;
+              }
+              if (component.types.includes('sublocality') || component.types.includes('neighborhood')) {
+                bairro = component.long_name;
+              }
+              // Nomes alternativos
+              if (component.types.includes('locality') || component.types.includes('administrative_area_level_4')) {
+                if (component.long_name !== component.short_name && !nomesAlternativos.includes(component.short_name)) {
+                  nomesAlternativos.push(component.short_name);
+                }
+              }
+            });
+
+            // Detecta povoado
+            const deteccao = detectarPovoadoProximo(latitude, longitude);
+            let povoadoNome = '';
+            
+            if (deteccao.dentroDaArea) {
+              if (deteccao.povoado) {
+                povoadoNome = deteccao.povoado.nome;
+                
+                // Adiciona nome popular se existir
+                if (deteccao.povoado.nomePopular && !nomesAlternativos.includes(deteccao.povoado.nomePopular)) {
+                  nomesAlternativos.push(deteccao.povoado.nomePopular);
+                }
+
+                const nomeDetectado = deteccao.povoado.nomePopular
+                  ? `${deteccao.povoado.nome} (${deteccao.povoado.nomePopular})`
+                  : deteccao.povoado.nome;
+
+                const povoadoAtual = showOutroPovoado ? outroPovoado : getNomeOficial(povoado);
+                
+                if (nomeDetectado && nomeDetectado !== povoadoAtual) {
+                  setPovoadoSugerido(nomeDetectado);
+                  setMostrarSugestao(true);
+                }
+              } else {
+                povoadoNome = 'Xique-Xique (Centro)';
+              }
+
+              // Se não tem rua, mas está em povoado, usar descrição genérica
+              if (!rua && povoadoNome && povoadoNome !== 'Xique-Xique (Centro)') {
+                rua = `Área central de ${povoadoNome.split(' (')[0]}`;
+              }
+
+              setEnderecoCompleto({
+                rua: rua || 'Localização detectada',
+                numero: numero || 's/n',
+                bairro: bairro || povoadoNome,
+                povoado: povoadoNome,
+                nomesAlternativos,
+              });
+            }
+          }
         }
+      } catch (error) {
+        console.log('Erro ao buscar endereço completo:', error);
       }
     } catch (error) {
       console.log('Erro ao detectar localização:', error);
@@ -294,10 +368,37 @@ export default function ProfileScreen() {
             <View style={styles.locationHeader}>
               <Text style={styles.locationIcon}>📍</Text>
               <View style={styles.locationInfo}>
-                <Text style={styles.locationTitle}>Sua Localização</Text>
+                <Text style={styles.locationTitle}>Sua Localização Atual</Text>
                 <Text style={styles.locationText}>{localizacaoDetectada}</Text>
               </View>
             </View>
+
+            {/* Endereço Completo */}
+            {enderecoCompleto && (
+              <View style={styles.addressDetails}>
+                <View style={styles.addressLine}>
+                  <Text style={styles.addressLabel}>📍 Endereço:</Text>
+                  <Text style={styles.addressValue}>
+                    {enderecoCompleto.rua}
+                    {enderecoCompleto.numero !== 's/n' && `, ${enderecoCompleto.numero}`}
+                  </Text>
+                </View>
+                
+                <View style={styles.addressLine}>
+                  <Text style={styles.addressLabel}>🏘️ {enderecoCompleto.povoado !== 'Xique-Xique (Centro)' ? 'Povoado:' : 'Bairro:'}</Text>
+                  <Text style={styles.addressValue}>{enderecoCompleto.bairro}</Text>
+                </View>
+
+                {enderecoCompleto.nomesAlternativos.length > 0 && (
+                  <View style={styles.alternativeNames}>
+                    <Text style={styles.alternativeLabel}>ℹ️ Também conhecido como:</Text>
+                    <Text style={styles.alternativeValue}>
+                      {enderecoCompleto.nomesAlternativos.join(', ')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
             
             {mostrarSugestao && povoadoSugerido && (
               <View style={styles.suggestionBox}>
@@ -1064,7 +1165,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 16,
-    marginTop: -10,
+    marginTop: 16,
     marginBottom: 16,
     borderWidth: 2,
     borderColor: '#4CAF50',
@@ -1158,5 +1259,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: '600',
+  },
+  addressDetails: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#A5D6A7',
+  },
+  addressLine: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  addressLabel: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    width: 100,
+  },
+  addressValue: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1B5E20',
+    fontWeight: '500',
+  },
+  alternativeNames: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#C8E6C9',
+    borderRadius: 8,
+  },
+  alternativeLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#1B5E20',
+    marginBottom: 4,
+  },
+  alternativeValue: {
+    fontSize: 12,
+    color: '#2E7D32',
+    fontStyle: 'italic',
   },
 });
