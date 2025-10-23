@@ -7,6 +7,7 @@ export interface Povoado {
   id: string;
   nome: string;
   nomeCompleto: string;
+  nomePopular?: string; // Como as pessoas chamam localmente
   coordenadas: {
     latitude: number;
     longitude: number;
@@ -27,6 +28,7 @@ export const POVOADOS_XIQUE_XIQUE: Povoado[] = [
     id: 'marreca-velha',
     nome: 'Marreca Velha',
     nomeCompleto: 'Povoado de Marreca Velha',
+    nomePopular: 'Marreca',
     coordenadas: {
       latitude: -10.8234,
       longitude: -42.7189,
@@ -196,10 +198,23 @@ export function getPovoados(): Povoado[] {
 }
 
 /**
- * Retorna nomes dos povoados para lista suspensa
+ * Retorna nomes dos povoados para lista suspensa (com nomes populares)
  */
 export function getPovoadsNomes(): string[] {
-  return POVOADOS_XIQUE_XIQUE.map(p => p.nome).sort();
+  return POVOADOS_XIQUE_XIQUE.map(p => {
+    if (p.nomePopular) {
+      return `${p.nome} (${p.nomePopular})`;
+    }
+    return p.nome;
+  }).sort();
+}
+
+/**
+ * Retorna apenas o nome oficial do povoado (sem nome popular)
+ */
+export function getNomeOficial(nomeComPopular: string): string {
+  // Remove o nome popular entre parênteses se existir
+  return nomeComPopular.split(' (')[0];
 }
 
 /**
@@ -304,10 +319,83 @@ export function getLocalidadesCompletas(): Array<{
     },
     ...POVOADOS_XIQUE_XIQUE.map(p => ({
       id: p.id,
-      nome: p.nome,
+      nome: p.nomePopular ? `${p.nome} (${p.nomePopular})` : p.nome,
       tipo: 'povoado' as const,
       coordenadas: p.coordenadas,
     })),
   ];
+}
+
+/**
+ * Detecta o povoado mais próximo baseado na localização GPS atual
+ */
+export function detectarPovoadoProximo(
+  latitude: number,
+  longitude: number,
+  raioMaximoKm: number = 5
+): { povoado: Povoado | null; distancia: number; dentroDaArea: boolean } {
+  let menorDistancia = Infinity;
+  let povoadoMaisProximo: Povoado | null = null;
+
+  // Verifica distância até a sede
+  const distanciaSede = calcularDistancia(
+    latitude,
+    longitude,
+    SEDE_XIQUE_XIQUE.latitude,
+    SEDE_XIQUE_XIQUE.longitude
+  );
+
+  if (distanciaSede < raioMaximoKm) {
+    return {
+      povoado: null, // null significa que está na sede
+      distancia: distanciaSede,
+      dentroDaArea: true,
+    };
+  }
+
+  // Verifica cada povoado
+  for (const povoado of POVOADOS_XIQUE_XIQUE) {
+    const distancia = calcularDistancia(
+      latitude,
+      longitude,
+      povoado.coordenadas.latitude,
+      povoado.coordenadas.longitude
+    );
+
+    if (distancia < menorDistancia) {
+      menorDistancia = distancia;
+      povoadoMaisProximo = povoado;
+    }
+  }
+
+  return {
+    povoado: povoadoMaisProximo,
+    distancia: menorDistancia,
+    dentroDaArea: menorDistancia <= raioMaximoKm,
+  };
+}
+
+/**
+ * Retorna uma descrição amigável da localização detectada
+ */
+export function getDescricaoLocalizacao(
+  latitude: number,
+  longitude: number
+): string {
+  const deteccao = detectarPovoadoProximo(latitude, longitude);
+
+  if (!deteccao.dentroDaArea) {
+    return `Você está a ${deteccao.distancia.toFixed(1)}km do povoado mais próximo`;
+  }
+
+  if (!deteccao.povoado) {
+    return 'Você está em Xique-Xique (Centro)';
+  }
+
+  const nomeCompleto = deteccao.povoado.nomePopular
+    ? `${deteccao.povoado.nome} (${deteccao.povoado.nomePopular})`
+    : deteccao.povoado.nome;
+
+  return `Você está em ${nomeCompleto}`;
 }
 

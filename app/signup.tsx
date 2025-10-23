@@ -37,6 +37,8 @@ export default function SignUpScreen() {
   const [neighborhood, setNeighborhood] = useState('');
   const [povoado, setPovoado] = useState('');
   const [showPovoadoModal, setShowPovoadoModal] = useState(false);
+  const [showOutroPovoado, setShowOutroPovoado] = useState(false);
+  const [outroPovoado, setOutroPovoado] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async () => {
@@ -88,11 +90,11 @@ export default function SignUpScreen() {
         userType,
         age: userAge,
         gender,
-        address: street || neighborhood || povoado ? {
+        address: street || neighborhood || povoado || outroPovoado ? {
           street,
           neighborhood,
           city: 'Xique-Xique',
-          povoado: povoado || undefined,
+          povoado: showOutroPovoado ? outroPovoado : povoado || undefined,
           state: 'BA',
           zipCode: '',
         } : undefined,
@@ -334,15 +336,36 @@ export default function SignUpScreen() {
           />
 
           <Text style={styles.label}>Povoado (opcional)</Text>
-          <TouchableOpacity
-            style={styles.selectButton}
-            onPress={() => setShowPovoadoModal(true)}
-          >
-            <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
-              {povoado || 'Selecione seu povoado'}
-            </Text>
-            <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
-          </TouchableOpacity>
+          {showOutroPovoado ? (
+            <View>
+              <TextInput
+                style={styles.input}
+                placeholder="Digite o nome do seu povoado"
+                placeholderTextColor={COLORS.grayDark}
+                value={outroPovoado}
+                onChangeText={setOutroPovoado}
+              />
+              <TouchableOpacity
+                style={styles.voltarButton}
+                onPress={() => {
+                  setShowOutroPovoado(false);
+                  setOutroPovoado('');
+                }}
+              >
+                <Text style={styles.voltarButtonText}>← Voltar para lista</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => setShowPovoadoModal(true)}
+            >
+              <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
+                {povoado || 'Selecione seu povoado'}
+              </Text>
+              <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
+            </TouchableOpacity>
+          )}
 
           {/* Modal de Seleção de Povoado */}
           <Modal
@@ -389,6 +412,22 @@ export default function SignUpScreen() {
                       )}
                     </TouchableOpacity>
                   ))}
+                  
+                  {/* Opção "Outro" */}
+                  <TouchableOpacity
+                    style={[styles.modalItem, styles.outroOption]}
+                    onPress={() => {
+                      setShowPovoadoModal(false);
+                      setShowOutroPovoado(true);
+                      setPovoado('');
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.modalItemText}>✏️ Outro (Digite o nome)</Text>
+                      <Text style={styles.outroSubtext}>Caso seu povoado não esteja na lista</Text>
+                    </View>
+                    <Ionicons name="create-outline" size={24} color={COLORS.primary} />
+                  </TouchableOpacity>
                 </ScrollView>
               </View>
             </View>
@@ -631,5 +670,26 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 16,
     color: COLORS.text,
+  },
+  outroOption: {
+    backgroundColor: '#FFF9E6',
+    borderBottomWidth: 0,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  outroSubtext: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginTop: 4,
+  },
+  voltarButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  voltarButtonText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });

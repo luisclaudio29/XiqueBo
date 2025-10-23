@@ -16,8 +16,9 @@ import { useState, useEffect } from 'react';
 import AuthService from '@/services/auth.service';
 import { UserData, Gender } from '@/types/user.types';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { getPovoadsNomes } from '@/constants/povoados';
+import { getPovoadsNomes, detectarPovoadoProximo, getDescricaoLocalizacao, getNomeOficial } from '@/constants/povoados';
 
 type AccountType = 'cliente' | 'motorista' | 'entregador';
 type VehicleType = 'moto' | 'carro' | 'mototaxi' | 'moto_normal' | 'expresso_black';
@@ -40,6 +41,13 @@ export default function ProfileScreen() {
   const [reference, setReference] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [showPovoadoModal, setShowPovoadoModal] = useState(false);
+  const [showOutroPovoado, setShowOutroPovoado] = useState(false);
+  const [outroPovoado, setOutroPovoado] = useState('');
+  
+  // Detecção de localização
+  const [localizacaoDetectada, setLocalizacaoDetectada] = useState<string | null>(null);
+  const [povoadoSugerido, setPovoadoSugerido] = useState<string | null>(null);
+  const [mostrarSugestao, setMostrarSugestao] = useState(false);
   
   // Tipo de conta
   const [accountType, setAccountType] = useState<AccountType>('cliente');
@@ -60,6 +68,56 @@ export default function ProfileScreen() {
     { id: 'bicicleta', name: 'Bicicleta', icon: '🚴', color: '#95E1D3', description: 'Entregas pequenas' },
     { id: 'expresso', name: 'Expresso ⚡', icon: '⚡', color: '#FFB800', description: 'Urgente' },
   ];
+
+  useEffect(() => {
+    detectarLocalizacao();
+  }, []);
+
+  const detectarLocalizacao = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocalizacaoDetectada('📍 Ative a localização para melhorar sua experiência');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      const descricao = getDescricaoLocalizacao(latitude, longitude);
+      setLocalizacaoDetectada(descricao);
+
+      const deteccao = detectarPovoadoProximo(latitude, longitude);
+      
+      if (deteccao.dentroDaArea) {
+        const nomeDetectado = deteccao.povoado
+          ? (deteccao.povoado.nomePopular
+              ? `${deteccao.povoado.nome} (${deteccao.povoado.nomePopular})`
+              : deteccao.povoado.nome)
+          : '';
+
+        const povoadoAtual = showOutroPovoado ? outroPovoado : getNomeOficial(povoado);
+        
+        if (nomeDetectado && nomeDetectado !== povoadoAtual) {
+          setPovoadoSugerido(nomeDetectado);
+          setMostrarSugestao(true);
+        }
+      }
+    } catch (error) {
+      console.log('Erro ao detectar localização:', error);
+      setLocalizacaoDetectada('📍 Ative a localização para melhorar sua experiência');
+    }
+  };
+
+  const aceitarSugestao = () => {
+    if (povoadoSugerido) {
+      setPovoado(povoadoSugerido);
+      setShowOutroPovoado(false);
+      setOutroPovoado('');
+      setMostrarSugestao(false);
+      Alert.alert('✅ Ótimo!', 'Povoado atualizado automaticamente!');
+    }
+  };
 
   const handleChoosePhoto = async () => {
     Alert.alert(
@@ -165,7 +223,7 @@ export default function ProfileScreen() {
         address: {
           street,
           neighborhood,
-          povoado,
+          povoado: showOutroPovoado ? outroPovoado : getNomeOficial(povoado),
           complement,
           reference,
           city: 'Xique-Xique',
@@ -229,6 +287,41 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
+
+        {/* Card de Localização Detectada */}
+        {localizacaoDetectada && (
+          <View style={styles.locationCard}>
+            <View style={styles.locationHeader}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <View style={styles.locationInfo}>
+                <Text style={styles.locationTitle}>Sua Localização</Text>
+                <Text style={styles.locationText}>{localizacaoDetectada}</Text>
+              </View>
+            </View>
+            
+            {mostrarSugestao && povoadoSugerido && (
+              <View style={styles.suggestionBox}>
+                <Text style={styles.suggestionText}>
+                  💡 Detectamos que você está em <Text style={styles.suggestionHighlight}>{povoadoSugerido}</Text>
+                </Text>
+                <View style={styles.suggestionButtons}>
+                  <TouchableOpacity
+                    style={styles.suggestionButtonAccept}
+                    onPress={aceitarSugestao}
+                  >
+                    <Text style={styles.suggestionButtonTextAccept}>✓ Atualizar Povoado</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.suggestionButtonDismiss}
+                    onPress={() => setMostrarSugestao(false)}
+                  >
+                    <Text style={styles.suggestionButtonTextDismiss}>✕ Não, obrigado</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Informações Pessoais */}
         <View style={styles.section}>
@@ -319,19 +412,40 @@ export default function ProfileScreen() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Povoado (opcional)</Text>
             {isEditing ? (
-              <TouchableOpacity
-                style={styles.selectButton}
-                onPress={() => setShowPovoadoModal(true)}
-              >
-                <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
-                  {povoado || 'Selecione seu povoado'}
-                </Text>
-                <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
-              </TouchableOpacity>
+              showOutroPovoado ? (
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Digite o nome do seu povoado"
+                    placeholderTextColor={COLORS.grayDark}
+                    value={outroPovoado}
+                    onChangeText={setOutroPovoado}
+                  />
+                  <TouchableOpacity
+                    style={styles.voltarButton}
+                    onPress={() => {
+                      setShowOutroPovoado(false);
+                      setOutroPovoado('');
+                    }}
+                  >
+                    <Text style={styles.voltarButtonText}>← Voltar para lista</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.selectButton}
+                  onPress={() => setShowPovoadoModal(true)}
+                >
+                  <Text style={povoado ? styles.selectButtonTextSelected : styles.selectButtonText}>
+                    {povoado || 'Selecione seu povoado'}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color={COLORS.grayDark} />
+                </TouchableOpacity>
+              )
             ) : (
               <TextInput
                 style={[styles.input, styles.inputDisabled]}
-                value={povoado || 'Sede (Centro)'}
+                value={(showOutroPovoado ? outroPovoado : povoado) || 'Sede (Centro)'}
                 editable={false}
               />
             )}
@@ -572,6 +686,22 @@ export default function ProfileScreen() {
                   )}
                 </TouchableOpacity>
               ))}
+              
+              {/* Opção "Outro" */}
+              <TouchableOpacity
+                style={[styles.modalItem, styles.outroOption]}
+                onPress={() => {
+                  setShowPovoadoModal(false);
+                  setShowOutroPovoado(true);
+                  setPovoado('');
+                }}
+              >
+                <View>
+                  <Text style={styles.modalItemText}>✏️ Outro (Digite o nome)</Text>
+                  <Text style={styles.outroSubtext}>Caso seu povoado não esteja na lista</Text>
+                </View>
+                <Ionicons name="create-outline" size={24} color={COLORS.primary} />
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -928,5 +1058,105 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 16,
     color: COLORS.text,
+  },
+  locationCard: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: -10,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationIcon: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  locationText: {
+    fontSize: 16,
+    color: '#1B5E20',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  suggestionBox: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#A5D6A7',
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#1B5E20',
+    marginBottom: 12,
+  },
+  suggestionHighlight: {
+    fontWeight: 'bold',
+    color: '#2E7D32',
+  },
+  suggestionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  suggestionButtonAccept: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  suggestionButtonTextAccept: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  suggestionButtonDismiss: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  suggestionButtonTextDismiss: {
+    color: '#2E7D32',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  outroOption: {
+    backgroundColor: '#FFF9E6',
+    borderBottomWidth: 0,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  outroSubtext: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginTop: 4,
+  },
+  voltarButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  voltarButtonText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
