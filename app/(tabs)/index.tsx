@@ -26,6 +26,8 @@ import {
 } from '@/utils/pricing';
 import { useLocation } from '@/hooks/use-location';
 import { getCombinedSuggestions, getFavorites } from '@/services/location.service';
+import OfflineIndicator from '@/components/offline-indicator';
+import OfflineService from '@/services/offline.service';
 
 type ServiceType = 'comum' | 'expressa' | 'bagagem' | 'pets' | 'moto' | 'mototaxi' | 
                    'entrega_carro' | 'entrega_moto' | 'entrega_bicicleta';
@@ -158,7 +160,7 @@ export default function HomeScreen() {
     setShowModal(true);
   };
 
-  const handleConfirmRide = (paymentMethod: string) => {
+  const handleConfirmRide = async (paymentMethod: string) => {
     setShowModal(false);
     
     const distance = estimateDistance(origin, destination);
@@ -169,6 +171,42 @@ export default function HomeScreen() {
       extras,
     });
 
+    // Verifica conexão de internet
+    const isOnline = await OfflineService.checkConnection();
+
+    // Se offline, salva localmente
+    if (!isOnline) {
+      try {
+        await OfflineService.saveOfflineRequest({
+          type: serviceCategory === 'entrega' ? 'delivery' : 'ride',
+          origin: {
+            latitude: -10.8236,  // TODO: Usar coordenadas GPS reais
+            longitude: -42.7273,
+            address: origin,
+          },
+          destination: {
+            latitude: -10.8236,  // TODO: Usar coordenadas GPS reais
+            longitude: -42.7273,
+            address: destination,
+          },
+          serviceType: selectedService,
+          paymentMethod,
+          estimatedValue: price,
+        });
+
+        Alert.alert(
+          '📵 Modo Offline',
+          `Sua solicitação foi salva!\n\nValor estimado: R$ ${price.toFixed(2)}\n\nEla será enviada automaticamente quando você tiver conexão de internet.`,
+          [{ text: 'Entendi', style: 'default' }]
+        );
+        return;
+      } catch (error) {
+        Alert.alert('Erro', 'Não foi possível salvar a solicitação. Tente novamente.');
+        return;
+      }
+    }
+
+    // Se online, processa normalmente
     const isDelivery = serviceCategory === 'entrega';
     const title = isDelivery ? 'Entrega Solicitada! 📦' : 'Corrida Solicitada! 🎉';
     const message = isDelivery 
@@ -251,9 +289,13 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={{ flex: 1 }}>
+      {/* Indicador de Conexão Offline/Online */}
+      <OfflineIndicator />
+      
+      <ScrollView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <Text style={styles.greeting}>
@@ -875,7 +917,8 @@ export default function HomeScreen() {
           onCancel={() => setShowModal(false)}
         />
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
