@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
+import AuthService from '@/services/auth.service';
 import { RideConfirmationModal } from '@/components/ride-confirmation-modal';
 import { PaymentMethodSelector, PaymentMethodOption } from '@/components/payment-method-selector';
 import { VoucherInput } from '@/components/voucher-input';
@@ -66,6 +67,9 @@ interface UserRegistrations {
 export default function HomeScreen() {
   const router = useRouter();
   
+  // Nome do usuário logado
+  const [userName, setUserName] = useState('Cliente');
+  
   // GPS em tempo real
   const { address: gpsAddress, loading: gpsLoading, refreshLocation } = useLocation();
   
@@ -79,6 +83,26 @@ export default function HomeScreen() {
   const [userType, setUserType] = useState<UserType>(
     registrations.hasClienteRegistration ? 'cliente' : 'motorista'
   );
+  
+  // Carregar dados do usuário
+  useEffect(() => {
+    loadUserData();
+  }, []);
+  
+  const loadUserData = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      if (user) {
+        setUserName(user.name.split(' ')[0]); // Pega primeiro nome
+        setRegistrations({
+          hasClienteRegistration: user.hasClienteRegistration || false,
+          hasMotoristaRegistration: user.hasMotoristaRegistration || false,
+        });
+      }
+    } catch (error) {
+      console.log('Erro ao carregar dados:', error);
+    }
+  };
   
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -231,30 +255,18 @@ export default function HomeScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <Text style={styles.greeting}>
-              Olá, {
-                registrations.hasClienteRegistration && registrations.hasMotoristaRegistration
-                  ? (userType === 'motorista' ? 'Motorista João! 👋' : 'Cliente! 👋')
-                  : registrations.hasMotoristaRegistration
-                    ? 'Motorista João! 👋'
-                    : 'Cliente! 👋'
-              }
+              Olá, {userName}! 👋
             </Text>
             <Text style={styles.subtitle}>Bem-vindo ao XiquêGo</Text>
           </View>
-          <View style={styles.headerButtons}>
-            <TouchableOpacity 
-              style={styles.menuButton}
-              onPress={() => router.push('/(tabs)/menu')}
-            >
-              <Text style={styles.menuButtonIcon}>☰</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.profileButton}
-              onPress={() => router.push('/(tabs)/profile')}
-            >
-              <Text style={styles.profileIcon}>👤</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -893,33 +905,27 @@ const styles = StyleSheet.create({
     color: COLORS.secondary,
     opacity: 0.9,
   },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  menuButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuButtonIcon: {
-    fontSize: 24,
-    color: COLORS.text,
-    fontWeight: 'bold',
-  },
   profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.background,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatarCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
   },
-  profileIcon: {
-    fontSize: 24,
+  avatarText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   section: {
     padding: 20,
