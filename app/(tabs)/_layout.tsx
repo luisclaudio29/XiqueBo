@@ -43,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Página Inicial',
+          title: 'Início',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
@@ -64,7 +64,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="menu"
         options={{
-          href: null, // Esconde da barra inferior
+          title: 'Menu',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="line.3.horizontal" color={color} />,
         }}
       />
     </Tabs>

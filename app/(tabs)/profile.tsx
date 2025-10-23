@@ -136,8 +136,8 @@ export default function ProfileScreen() {
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
         </View>
-        <Text style={styles.headerName}>{name}</Text>
-        <Text style={styles.headerPhone}>{phone}</Text>
+        <Text style={styles.headerGreeting}>Olá, {userType === 'cliente' ? 'Cliente' : 'Motorista'}!</Text>
+        <Text style={styles.headerSubtext}>Gerencie seu perfil</Text>
       </View>
 
       {/* User Type Selector - Only if has both registrations */}
@@ -436,23 +436,23 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   avatarText: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  headerName: {
-    fontSize: 24,
+  headerGreeting: {
+    fontSize: 26,
     fontWeight: 'bold',
     color: COLORS.secondary,
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  headerPhone: {
-    fontSize: 16,
+  headerSubtext: {
+    fontSize: 15,
     color: COLORS.secondary,
-    opacity: 0.8,
+    opacity: 0.85,
   },
   userTypeSelectorContainer: {
     padding: 16,
