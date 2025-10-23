@@ -331,8 +331,8 @@ Desenvolvido com ❤️ para mover Xique-Xique!
 ## 📞 Suporte
 
 Para dúvidas ou sugestões:
-- 📧 Email: suporte@xiquego.com.br
-- 📱 WhatsApp: (74) 9999-9999
+- 📧 Email: bastosa549@gmail.com
+- 📱 WhatsApp: (71) 98263-3972
 
 ---
 

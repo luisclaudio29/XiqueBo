@@ -87,11 +87,11 @@ export default function HelpCenterScreen() {
   };
 
   const openWhatsApp = () => {
-    Linking.openURL('whatsapp://send?phone=5574999999999&text=Olá, preciso de ajuda!');
+    Linking.openURL('whatsapp://send?phone=5571982633972&text=Olá, preciso de ajuda com o XiquêGo!');
   };
 
   const openEmail = () => {
-    Linking.openURL('mailto:suporte@xiquego.com.br');
+    Linking.openURL('mailto:bastosa549@gmail.com');
   };
 
   return (
