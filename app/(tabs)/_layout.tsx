@@ -55,17 +55,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="menu"
         options={{
           title: 'Menu',
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="line.3.horizontal" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null, // Esconde da barra - acesso apenas pelo avatar
         }}
       />
     </Tabs>

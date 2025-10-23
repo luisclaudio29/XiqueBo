@@ -7,12 +7,14 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
 import { useState, useEffect } from 'react';
 import AuthService from '@/services/auth.service';
 import { UserData, Gender } from '@/types/user.types';
+import * as ImagePicker from 'expo-image-picker';
 
 type UserType = 'cliente' | 'motorista';
 
@@ -34,6 +36,7 @@ export default function ProfileScreen() {
   const [gender, setGender] = useState<Gender>('prefiro-nao-informar');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   
   const [registrations, setRegistrations] = useState<UserRegistrations>({
     hasClienteRegistration: false,
@@ -103,6 +106,60 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleChoosePhoto = async () => {
+    Alert.alert(
+      '📸 Foto de Perfil',
+      'Escolha uma opção:',
+      [
+        {
+          text: 'Câmera',
+          onPress: async () => {
+            const permission = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permission.granted) {
+              Alert.alert('Permissão negada', 'Precisamos de acesso à câmera');
+              return;
+            }
+            
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            
+            if (!result.canceled) {
+              setProfileImage(result.assets[0].uri);
+              Alert.alert('✅ Sucesso', 'Foto atualizada com sucesso!');
+            }
+          },
+        },
+        {
+          text: 'Galeria',
+          onPress: async () => {
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
+              Alert.alert('Permissão negada', 'Precisamos de acesso à galeria');
+              return;
+            }
+            
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            
+            if (!result.canceled) {
+              setProfileImage(result.assets[0].uri);
+              Alert.alert('✅ Sucesso', 'Foto atualizada com sucesso!');
+            }
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  };
+
   const handleLogout = async () => {
     Alert.alert(
       'Sair',
@@ -133,10 +190,19 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
-        </View>
-        <Text style={styles.headerGreeting}>Olá, {userType === 'cliente' ? 'Cliente' : 'Motorista'}!</Text>
+        <TouchableOpacity style={styles.avatarContainer} onPress={handleChoosePhoto}>
+          <View style={styles.avatarCircle}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+            )}
+          </View>
+          <View style={styles.cameraButton}>
+            <Text style={styles.cameraIcon}>📷</Text>
+          </View>
+        </TouchableOpacity>
+        <Text style={styles.headerGreeting}>Olá, {name.split(' ')[0]}!</Text>
         <Text style={styles.headerSubtext}>Gerencie seu perfil</Text>
       </View>
 
@@ -429,19 +495,45 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     alignItems: 'center',
   },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
   avatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.secondary,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    fontSize: 18,
   },
   headerGreeting: {
     fontSize: 26,

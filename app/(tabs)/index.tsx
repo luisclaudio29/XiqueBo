@@ -9,6 +9,7 @@ import {
   Alert,
   Switch,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
@@ -69,6 +70,7 @@ export default function HomeScreen() {
   
   // Nome do usuário logado
   const [userName, setUserName] = useState('Cliente');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   
   // GPS em tempo real
   const { address: gpsAddress, loading: gpsLoading, refreshLocation } = useLocation();
@@ -264,7 +266,11 @@ export default function HomeScreen() {
             onPress={() => router.push('/(tabs)/profile')}
           >
             <View style={styles.avatarCircle}>
-              <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -921,6 +927,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarText: {
     fontSize: 20,
