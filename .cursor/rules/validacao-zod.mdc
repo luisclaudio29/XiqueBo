@@ -1,0 +1,459 @@
+---
+globs: *.ts,*.tsx
+description: Validação obrigatória de dados com TypeScript e Zod
+---
+
+# Validação com TypeScript + Zod
+
+## Regra Fundamental
+**Todos os dados de entrada DEVEM ser validados com Zod**
+
+Nunca confie em dados externos. Sempre valide antes de usar.
+
+## Quando Validar
+
+### ✅ SEMPRE Valide:
+- **Formulários**: Todos os inputs do usuário
+- **APIs**: Respostas de APIs externas
+- **Props de Componentes**: Dados críticos ou externos
+- **Local Storage**: Dados armazenados localmente
+- **Query Parameters**: Parâmetros de URL
+- **Variáveis de Ambiente**: Configurações críticas
+
+### ❌ Opcional (mas recomendado):
+- Props de componentes internos simples
+- Dados já validados anteriormente no mesmo fluxo
+
+## Setup do Zod
+
+### Instalação
+```bash
+npm install zod
+```
+
+### Importação
+```typescript
+import { z } from 'zod';
+```
+
+## Estrutura de Validação
+
+### 1. Definir Schema Zod
+```typescript
+// schemas/user.schema.ts
+import { z } from 'zod';
+
+export const userLoginSchema = z.object({
+  email: z.string()
+    .email('Email inválido')
+    .min(1, 'Email é obrigatório'),
+  password: z.string()
+    .min(6, 'Senha deve ter no mínimo 6 caracteres')
+    .max(50, 'Senha muito longa'),
+});
+
+// Extrair tipo TypeScript do schema
+export type UserLogin = z.infer<typeof userLoginSchema>;
+```
+
+### 2. Validar Dados
+```typescript
+// Validação síncrona
+const result = userLoginSchema.safeParse(formData);
+
+if (!result.success) {
+  // Tratar erros
+  const errors = result.error.format();
+  console.error('Erro de validação:', errors);
+  return;
+}
+
+// Dados validados e tipados!
+const validData: UserLogin = result.data;
+```
+
+## Exemplos Práticos
+
+### Exemplo 1: Validação de Formulário de Login
+
+```typescript
+// schemas/auth.schema.ts
+import { z } from 'zod';
+
+export const loginSchema = z.object({
+  phone: z.string()
+    .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido. Use o formato (XX) XXXXX-XXXX')
+    .or(z.string().email('Email inválido')),
+  password: z.string()
+    .min(6, 'Senha deve ter no mínimo 6 caracteres'),
+});
+
+export type LoginForm = z.infer<typeof loginSchema>;
+```
+
+```typescript
+// app/login.tsx
+import { useState } from 'react';
+import { loginSchema, LoginForm } from '@/schemas/auth.schema';
+
+export default function LoginScreen() {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleLogin = async (formData: LoginForm) => {
+    // Validar dados
+    const result = loginSchema.safeParse(formData);
+    
+    if (!result.success) {
+      // Converter erros Zod para formato amigável
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    // Limpar erros
+    setErrors({});
+
+    // Dados validados! Prosseguir com login
+    try {
+      await authService.login(result.data);
+    } catch (error) {
+      // Tratar erro de autenticação
+      setErrors({ general: 'Credenciais inválidas' });
+    }
+  };
+
+  return (
+    <View>
+      <TextInput 
+        placeholder="Email ou telefone"
+        onChangeText={(text) => {/* atualizar formData */}}
+      />
+      {errors.phone && <Text style={styles.error}>{errors.phone}</Text>}
+      
+      <TextInput 
+        placeholder="Senha"
+        secureTextEntry
+        onChangeText={(text) => {/* atualizar formData */}}
+      />
+      {errors.password && <Text style={styles.error}>{errors.password}</Text>}
+      
+      {errors.general && <Text style={styles.error}>{errors.general}</Text>}
+      
+      <Button title="Entrar" onPress={handleLogin} />
+    </View>
+  );
+}
+```
+
+### Exemplo 2: Validação de Resposta de API
+
+```typescript
+// schemas/ride.schema.ts
+import { z } from 'zod';
+
+export const rideResponseSchema = z.object({
+  id: z.string().uuid('ID inválido'),
+  origin: z.string().min(1, 'Origem é obrigatória'),
+  destination: z.string().min(1, 'Destino é obrigatório'),
+  price: z.number().positive('Preço deve ser positivo'),
+  distance: z.number().positive('Distância deve ser positiva'),
+  estimatedTime: z.number().positive('Tempo estimado deve ser positivo'),
+  status: z.enum(['pending', 'accepted', 'in_progress', 'completed', 'cancelled']),
+  createdAt: z.string().datetime('Data inválida'),
+});
+
+export type RideResponse = z.infer<typeof rideResponseSchema>;
+```
+
+```typescript
+// services/ride.service.ts
+import { rideResponseSchema, RideResponse } from '@/schemas/ride.schema';
+
+export class RideService {
+  async getRideById(id: string): Promise<RideResponse> {
+    try {
+      const response = await fetch(`/api/rides/${id}`);
+      const data = await response.json();
+      
+      // Validar resposta da API
+      const result = rideResponseSchema.safeParse(data);
+      
+      if (!result.success) {
+        console.error('Resposta da API inválida:', result.error);
+        throw new Error('Dados da corrida estão em formato inválido');
+      }
+      
+      // Retornar dados validados e tipados
+      return result.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Erro ao buscar corrida: ${error.message}`);
+      }
+      throw new Error('Erro desconhecido ao buscar corrida');
+    }
+  }
+}
+```
+
+### Exemplo 3: Validação de Formulário Complexo
+
+```typescript
+// schemas/driver.schema.ts
+import { z } from 'zod';
+
+export const driverRegistrationSchema = z.object({
+  // Dados pessoais
+  name: z.string()
+    .min(3, 'Nome deve ter no mínimo 3 caracteres')
+    .max(100, 'Nome muito longo'),
+  cpf: z.string()
+    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF inválido. Use o formato XXX.XXX.XXX-XX'),
+  phone: z.string()
+    .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido'),
+  email: z.string()
+    .email('Email inválido')
+    .toLowerCase(),
+  
+  // CNH
+  cnh: z.object({
+    number: z.string()
+      .length(11, 'CNH deve ter 11 dígitos')
+      .regex(/^\d+$/, 'CNH deve conter apenas números'),
+    category: z.enum(['A', 'B', 'AB', 'C', 'D', 'E'], {
+      errorMap: () => ({ message: 'Categoria de CNH inválida' }),
+    }),
+    expirationDate: z.string()
+      .datetime('Data de validade inválida')
+      .refine((date) => new Date(date) > new Date(), {
+        message: 'CNH vencida',
+      }),
+  }),
+  
+  // Veículo
+  vehicle: z.object({
+    plate: z.string()
+      .regex(/^[A-Z]{3}-\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/, 
+        'Placa inválida. Use o formato ABC-1234 ou ABC1D23'),
+    brand: z.string().min(2, 'Marca é obrigatória'),
+    model: z.string().min(2, 'Modelo é obrigatório'),
+    year: z.number()
+      .min(2015, 'Veículo muito antigo (mínimo 2015)')
+      .max(new Date().getFullYear() + 1, 'Ano inválido'),
+    color: z.string().min(3, 'Cor é obrigatória'),
+  }),
+  
+  // Termos
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({ message: 'Você deve aceitar os termos' }),
+  }),
+});
+
+export type DriverRegistration = z.infer<typeof driverRegistrationSchema>;
+```
+
+### Exemplo 4: Validação Parcial (Atualização)
+
+```typescript
+// Para updates, use .partial() para tornar campos opcionais
+export const driverUpdateSchema = driverRegistrationSchema.partial();
+
+export type DriverUpdate = z.infer<typeof driverUpdateSchema>;
+```
+
+### Exemplo 5: Validação de Ambiente
+
+```typescript
+// config/env.ts
+import { z } from 'zod';
+
+const envSchema = z.object({
+  GOOGLE_MAPS_API_KEY: z.string().min(1, 'Google Maps API Key é obrigatória'),
+  FIREBASE_API_KEY: z.string().min(1, 'Firebase API Key é obrigatória'),
+  API_URL: z.string().url('URL da API inválida'),
+  ENVIRONMENT: z.enum(['development', 'staging', 'production']),
+});
+
+// Validar variáveis de ambiente na inicialização
+const envResult = envSchema.safeParse(process.env);
+
+if (!envResult.success) {
+  console.error('❌ Erro nas variáveis de ambiente:', envResult.error.format());
+  throw new Error('Configuração de ambiente inválida');
+}
+
+export const env = envResult.data;
+```
+
+## Mensagens de Erro Claras
+
+### ✅ Boas Mensagens
+```typescript
+z.string()
+  .min(6, 'Senha deve ter no mínimo 6 caracteres')
+  .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+  .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+```
+
+### ❌ Mensagens Ruins
+```typescript
+z.string()
+  .min(6, 'Invalid')  // ❌ Não específico
+  .regex(/[A-Z]/)     // ❌ Sem mensagem customizada
+```
+
+## Schemas Reutilizáveis
+
+```typescript
+// schemas/common.schema.ts
+import { z } from 'zod';
+
+// Schemas comuns reutilizáveis
+export const phoneSchema = z.string()
+  .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido. Use (XX) XXXXX-XXXX');
+
+export const cpfSchema = z.string()
+  .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF inválido. Use XXX.XXX.XXX-XX');
+
+export const emailSchema = z.string()
+  .email('Email inválido')
+  .toLowerCase();
+
+export const cepSchema = z.string()
+  .regex(/^\d{5}-\d{3}$/, 'CEP inválido. Use XXXXX-XXX');
+
+// Reusar em outros schemas
+export const addressSchema = z.object({
+  street: z.string().min(3, 'Rua é obrigatória'),
+  number: z.string().min(1, 'Número é obrigatório'),
+  cep: cepSchema,
+});
+```
+
+## Tratamento de Erros
+
+### Helper para Formatar Erros
+```typescript
+// utils/validation.ts
+import { ZodError } from 'zod';
+
+export function formatZodErrors(error: ZodError): Record<string, string> {
+  const fieldErrors: Record<string, string> = {};
+  
+  error.errors.forEach((err) => {
+    const path = err.path.join('.');
+    fieldErrors[path] = err.message;
+  });
+  
+  return fieldErrors;
+}
+
+// Uso
+const result = schema.safeParse(data);
+if (!result.success) {
+  const errors = formatZodErrors(result.error);
+  setFormErrors(errors);
+}
+```
+
+### Hook Personalizado para Validação
+```typescript
+// hooks/useFormValidation.ts
+import { useState } from 'react';
+import { z } from 'zod';
+import { formatZodErrors } from '@/utils/validation';
+
+export function useFormValidation<T extends z.ZodType>(schema: T) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = (data: unknown): data is z.infer<T> => {
+    const result = schema.safeParse(data);
+    
+    if (!result.success) {
+      setErrors(formatZodErrors(result.error));
+      return false;
+    }
+    
+    setErrors({});
+    return true;
+  };
+
+  const clearErrors = () => setErrors({});
+  
+  const clearError = (field: string) => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
+
+  return { errors, validate, clearErrors, clearError };
+}
+
+// Uso em componente
+function MyForm() {
+  const { errors, validate } = useFormValidation(loginSchema);
+  
+  const handleSubmit = () => {
+    if (validate(formData)) {
+      // Dados válidos!
+      submitForm(formData);
+    }
+  };
+}
+```
+
+## Organização de Schemas
+
+### Estrutura de Pastas
+```
+/schemas
+  /auth
+    - login.schema.ts
+    - register.schema.ts
+  /ride
+    - create-ride.schema.ts
+    - ride-response.schema.ts
+  /user
+    - profile.schema.ts
+    - driver.schema.ts
+  - common.schema.ts
+  - index.ts
+```
+
+### Arquivo Index para Exportação
+```typescript
+// schemas/index.ts
+export * from './auth/login.schema';
+export * from './auth/register.schema';
+export * from './ride/create-ride.schema';
+export * from './user/profile.schema';
+export * from './common.schema';
+```
+
+## Benefícios
+
+- ✅ **Type Safety**: TypeScript infere tipos automaticamente
+- ✅ **Runtime Validation**: Valida em tempo de execução
+- ✅ **Mensagens Claras**: Erros amigáveis ao usuário
+- ✅ **DRY**: Schemas reutilizáveis
+- ✅ **Documentação**: Schemas servem como documentação
+- ✅ **Previne Bugs**: Captura erros antes de quebrar o app
+
+## Checklist Antes de Commitar
+
+- [ ] Todos os formulários validam com Zod?
+- [ ] Todas as respostas de API são validadas?
+- [ ] Mensagens de erro são claras e em português?
+- [ ] Schemas estão organizados em arquivos separados?
+- [ ] Tipos TypeScript são inferidos dos schemas?
+- [ ] Erros de validação são exibidos ao usuário?
+
+---
+
+**Lembre-se:** Validação não é overhead, é segurança. Zod + TypeScript = Código robusto e confiável.

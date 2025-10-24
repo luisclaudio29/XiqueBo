@@ -8,10 +8,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [Unreleased]
 
 ### Added
+- Regra Cursor para validação obrigatória com TypeScript + Zod
 - Regra Cursor para documentação obrigatória (README e CHANGELOG)
 - Regra Cursor para tratamento rigoroso de erros TypeScript
 - Regra Cursor para implementação incremental e confirmação de escopo
 - Regra Cursor para convenção de commits (feat:/fix:)
+- Biblioteca Zod (v3.25.76) para validação de dados em runtime
 
 ## [1.0.0] - 2024-10-24
 

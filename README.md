@@ -200,6 +200,49 @@ XIQUEGO/
 
 ---
 
+## 🔒 Validação de Dados
+
+### Zod para Validação TypeScript-First
+
+O XiquêGo utiliza **Zod** para garantir a validação robusta de todos os dados de entrada, incluindo formulários e respostas de APIs.
+
+#### Características
+- ✅ **Type Safety**: Inferência automática de tipos TypeScript
+- ✅ **Runtime Validation**: Validação em tempo de execução
+- ✅ **Mensagens Claras**: Erros amigáveis ao usuário em português
+- ✅ **Schemas Reutilizáveis**: DRY (Don't Repeat Yourself)
+
+#### Exemplo de Uso
+```typescript
+import { z } from 'zod';
+
+// Definir schema
+const loginSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+});
+
+// Tipo inferido automaticamente
+type LoginForm = z.infer<typeof loginSchema>;
+
+// Validar dados
+const result = loginSchema.safeParse(formData);
+if (!result.success) {
+  // Tratar erros
+  console.error(result.error.format());
+}
+```
+
+#### Onde Validamos
+- 📝 Todos os formulários (login, cadastro, perfil)
+- 🌐 Respostas de APIs externas
+- 📦 Dados do Local Storage
+- ⚙️ Variáveis de ambiente
+
+Para mais detalhes, veja [`.cursor/rules/validacao-zod.mdc`](.cursor/rules/validacao-zod.mdc)
+
+---
+
 ## 🛠️ Tecnologias
 
 ### Core
@@ -212,6 +255,7 @@ XIQUEGO/
 - **react-native-maps** - Mapas interativos
 - **expo-location** - Geolocalização
 - **react-native-reanimated** - Animações
+- **zod** - Validação de dados TypeScript-first
 
 ### Ferramentas
 - **ESLint** - Linting
