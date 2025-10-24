@@ -5,6 +5,7 @@
 import React, { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Constants from 'expo-constants';
 import { COLORS } from '@/constants/colors';
 
 interface GooglePlacesInputProps {
@@ -16,8 +17,11 @@ interface GooglePlacesInputProps {
 export function GooglePlacesInput({ placeholder, onPlaceSelected, defaultValue }: GooglePlacesInputProps) {
   const ref = useRef<any>(null);
   
-  // Pega a chave da API do ambiente
-  const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  // Pega a chave da API do ambiente ou do app.json
+  const GOOGLE_MAPS_API_KEY = 
+    process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 
+    Constants.expoConfig?.extra?.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 
+    '';
 
   return (
     <View style={styles.container}>
