@@ -28,6 +28,7 @@ import { useLocation } from '@/hooks/use-location';
 import { getCombinedSuggestions, getFavorites } from '@/services/location.service';
 import OfflineIndicator from '@/components/offline-indicator';
 import OfflineService from '@/services/offline.service';
+import HotspotsButton from '@/components/hotspots-button';
 
 type ServiceType = 'comum' | 'expressa' | 'bagagem' | 'pets' | 'moto' | 'mototaxi' | 
                    'entrega_carro' | 'entrega_moto' | 'entrega_bicicleta';
@@ -918,6 +919,9 @@ export default function HomeScreen() {
         />
       )}
       </ScrollView>
+
+      {/* Botão Flutuante de Hotspots - Só para Motoristas */}
+      <HotspotsButton userType={userType} />
     </View>
   );
 }
