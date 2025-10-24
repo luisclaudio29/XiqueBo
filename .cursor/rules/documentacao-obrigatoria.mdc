@@ -1,0 +1,275 @@
+---
+alwaysApply: true
+description: Documentação obrigatória - README e CHANGELOG devem ser atualizados com novas funcionalidades
+---
+
+# Documentação Obrigatória
+
+## Regra de Ouro
+**Código sem documentação = Código incompleto**
+
+Toda funcionalidade implementada DEVE ser acompanhada de atualização na documentação.
+
+## Arquivos Obrigatórios
+
+### 1. README.md
+**Quando atualizar:**
+- Ao adicionar uma nova funcionalidade
+- Ao adicionar uma nova dependência
+- Ao mudar comandos de execução
+- Ao adicionar novos requisitos
+- Ao mudar a estrutura do projeto
+
+**O que documentar:**
+- **Descrição clara**: O que a funcionalidade faz
+- **Como usar**: Exemplos práticos de uso
+- **Pré-requisitos**: O que é necessário para funcionar
+- **Configuração**: Passos de setup se necessário
+- **Screenshots**: Imagens quando aplicável (especialmente para UI)
+
+### 2. CHANGELOG.md
+**Quando atualizar:**
+- A CADA commit de funcionalidade (feat:)
+- A CADA correção de bug (fix:)
+- Mudanças significativas (refactor:, perf:)
+
+**Formato do CHANGELOG:**
+```markdown
+## [Unreleased]
+
+### Added (feat:)
+- Nova funcionalidade X que permite Y
+- Componente Z adicionado para fazer W
+
+### Fixed (fix:)
+- Corrigido erro no componente A
+- Resolvido problema de performance em B
+
+### Changed (refactor:, style:)
+- Refatorado módulo C para melhor organização
+- Atualizada interface D
+
+### Removed
+- Removida dependência obsoleta E
+```
+
+## Fluxo de Trabalho Obrigatório
+
+### Para Novas Funcionalidades (feat:)
+
+1. **Implementar** a funcionalidade
+2. **Atualizar README.md**:
+   - Adicionar seção explicando a funcionalidade
+   - Incluir exemplos de uso
+   - Atualizar índice se necessário
+3. **Atualizar CHANGELOG.md**:
+   - Adicionar entrada em `## [Unreleased]` → `### Added`
+   - Descrever o que foi adicionado
+4. **Fazer commit** incluindo os 3 arquivos:
+   ```bash
+   git add [arquivos-da-funcionalidade] README.md CHANGELOG.md
+   git commit -m "feat: [descrição da funcionalidade]"
+   ```
+
+### Para Correções de Bugs (fix:)
+
+1. **Corrigir** o bug
+2. **Atualizar CHANGELOG.md**:
+   - Adicionar entrada em `## [Unreleased]` → `### Fixed`
+   - Descrever o que foi corrigido
+3. **Atualizar README.md** (se necessário):
+   - Se o bug afetava a documentação existente
+4. **Fazer commit**:
+   ```bash
+   git add [arquivos-corrigidos] CHANGELOG.md
+   git commit -m "fix: [descrição do problema resolvido]"
+   ```
+
+## Exemplos Práticos
+
+### Exemplo 1: Nova Funcionalidade de Autenticação
+
+**README.md - Adicionar seção:**
+```markdown
+## Autenticação
+
+O XiqueGo implementa autenticação usando Firebase Auth com suporte para:
+- Login com Email/Senha
+- Login com Google
+- Login com Facebook
+
+### Como usar
+
+\`\`\`typescript
+import { useAuth } from '@/contexts/AuthContext';
+
+function MyComponent() {
+  const { user, signIn, signOut } = useAuth();
+  
+  const handleLogin = async () => {
+    await signIn(email, password);
+  };
+  
+  return <Button onPress={handleLogin}>Login</Button>;
+}
+\`\`\`
+
+### Configuração
+
+1. Configure o Firebase no console
+2. Adicione suas credenciais em `.env`:
+   \`\`\`
+   FIREBASE_API_KEY=sua_chave_aqui
+   \`\`\`
+```
+
+**CHANGELOG.md - Adicionar entrada:**
+```markdown
+## [Unreleased]
+
+### Added
+- Sistema de autenticação com Firebase Auth (Email, Google, Facebook)
+- Context `AuthContext` para gerenciamento de sessão de usuário
+- Telas de login e cadastro com validação de formulários
+- Proteção de rotas autenticadas
+```
+
+### Exemplo 2: Correção de Bug no Cálculo de Preço
+
+**CHANGELOG.md - Adicionar entrada:**
+```markdown
+## [Unreleased]
+
+### Fixed
+- Corrigido cálculo de preço que não considerava taxa adicional para entregas em povoados
+- Resolvido erro de arredondamento em valores monetários
+```
+
+**README.md - Atualizar se necessário:**
+```markdown
+## Cálculo de Preços
+
+O sistema calcula preços baseado em:
+- Distância percorrida
+- Tipo de veículo
+- Taxa adicional para povoados (10%)  ← ATUALIZAR SE MUDOU
+```
+
+## Template README.md
+
+Use esta estrutura base para o README.md:
+
+```markdown
+# Nome do Projeto
+
+Descrição breve do que o projeto faz.
+
+## Funcionalidades
+
+- ✅ Funcionalidade 1
+- ✅ Funcionalidade 2
+- 🚧 Em desenvolvimento: Funcionalidade 3
+
+## Instalação
+
+\`\`\`bash
+npm install
+\`\`\`
+
+## Configuração
+
+1. Passo 1
+2. Passo 2
+
+## Como Usar
+
+### Funcionalidade X
+
+Exemplo de código...
+
+### Funcionalidade Y
+
+Exemplo de código...
+
+## Estrutura do Projeto
+
+\`\`\`
+/app        - Telas e rotas
+/components - Componentes reutilizáveis
+/services   - Lógica de negócio
+\`\`\`
+
+## Contribuindo
+
+Siga as regras em `.cursor/rules/`
+
+## Licença
+
+MIT
+```
+
+## Template CHANGELOG.md
+
+Use esta estrutura:
+
+```markdown
+# Changelog
+
+Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
+
+O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
+e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
+
+## [Unreleased]
+
+### Added
+- Novas funcionalidades vão aqui
+
+### Changed
+- Mudanças em funcionalidades existentes
+
+### Fixed
+- Correções de bugs
+
+### Removed
+- Funcionalidades removidas
+
+## [1.0.0] - 2025-01-15
+
+### Added
+- Release inicial
+- Funcionalidade X
+- Funcionalidade Y
+```
+
+## Verificação Antes do Commit
+
+Antes de fazer commit, verifique:
+
+- [ ] README.md atualizado (se feat: ou mudança significativa)
+- [ ] CHANGELOG.md atualizado (sempre)
+- [ ] Exemplos de código funcionam
+- [ ] Links na documentação não estão quebrados
+- [ ] Screenshots atualizados (se mudança visual)
+
+## Benefícios
+
+- ✅ Time sempre sabe o que mudou
+- ✅ Novos desenvolvedores entendem rapidamente
+- ✅ Histórico claro de evolução do projeto
+- ✅ Facilita troubleshooting
+- ✅ Documentação nunca fica desatualizada
+
+## Exceções
+
+**Não precisa atualizar documentação para:**
+- Commits de formatação pura (style:)
+- Mudanças internas que não afetam uso (refactor: interno)
+- Atualizações de dependências sem mudança de API
+- Correções de typos na documentação (docs:)
+
+**Mas sempre atualize CHANGELOG.md mesmo nesses casos!**
+
+---
+
+**Lembre-se:** Documentação é parte do desenvolvimento, não um extra opcional. Se não está documentado, não está pronto.
