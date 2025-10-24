@@ -69,33 +69,14 @@ export default function MenuScreen() {
 
           <TouchableOpacity 
             style={styles.menuCard} 
-            onPress={() => {
-              Alert.alert(
-                'Pagamentos',
-                'Escolha o tipo de pagamento:',
-                [
-                  {
-                    text: 'Minhas Formas de Pagamento',
-                    onPress: () => handleNavigation('/payment-methods'),
-                  },
-                  {
-                    text: 'Ganhos (Motoristas)',
-                    onPress: () => handleNavigation('/driver-payments'),
-                  },
-                  {
-                    text: 'Cancelar',
-                    style: 'cancel',
-                  },
-                ]
-              );
-            }}
+            onPress={() => router.push('/driver/wallet')}
           >
             <View style={styles.menuIcon}>
               <Text style={styles.menuIconText}>💰</Text>
             </View>
             <View style={styles.menuInfo}>
-              <Text style={styles.menuTitle}>Pagamentos</Text>
-              <Text style={styles.menuSubtitle}>Saldo, cartões e Pix</Text>
+              <Text style={styles.menuTitle}>Carteira do Motorista</Text>
+              <Text style={styles.menuSubtitle}>Ganhos, saques e pagamentos</Text>
             </View>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>

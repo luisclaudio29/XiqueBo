@@ -24,9 +24,36 @@ export default function DriverWalletScreen() {
   // Mock: dados do motorista
   const [balance, setBalance] = useState(245.50); // Saldo disponível (já com taxa 2% descontada)
   const [totalEarned, setTotalEarned] = useState(1250.00);
-  const [pixKey, setPixKey] = useState('71982633972');
+  const [todayEarnings, setTodayEarnings] = useState(85.50); // Ganhos de hoje
+  const [weekEarnings, setWeekEarnings] = useState(450.00); // Ganhos da semana
+  const [monthEarnings, setMonthEarnings] = useState(1250.00); // Ganhos do mês
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showBankAccountsModal, setShowBankAccountsModal] = useState(false);
+  const [showPayPlatformModal, setShowPayPlatformModal] = useState(false);
+
+  // Contas bancárias cadastradas
+  const [bankAccounts, setBankAccounts] = useState([
+    {
+      id: '1',
+      type: 'pix',
+      key: '71982633972',
+      label: 'PIX - Celular',
+      default: true,
+    },
+    {
+      id: '2',
+      type: 'bank',
+      bank: 'Banco do Brasil',
+      agency: '1234-5',
+      account: '67890-1',
+      label: 'Banco do Brasil',
+      default: false,
+    },
+  ]);
+
+  // Taxas pendentes
+  const [pendingFees, setPendingFees] = useState(12.50);
 
   const transactions = [
     { id: '1', type: 'corrida', amount: 25.50, date: '2025-10-24', status: 'completed' },
@@ -104,21 +131,53 @@ export default function DriverWalletScreen() {
           </Text>
         </View>
 
-        {/* Estatísticas */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Ionicons name="cash-outline" size={32} color={COLORS.primary} />
-            <Text style={styles.statValue}>R$ {totalEarned.toFixed(2)}</Text>
-            <Text style={styles.statLabel}>Total recebido</Text>
-          </View>
+        {/* Ganhos em tempo real */}
+        <View style={styles.earningsContainer}>
+          <Text style={styles.earningsTitle}>Ganhos em tempo real</Text>
+          
+          <View style={styles.earningsGrid}>
+            <View style={styles.earningItem}>
+              <Ionicons name="today" size={24} color={COLORS.primary} />
+              <Text style={styles.earningValue}>R$ {todayEarnings.toFixed(2)}</Text>
+              <Text style={styles.earningLabel}>Hoje</Text>
+            </View>
 
-          <View style={styles.statDivider} />
+            <View style={styles.earningItem}>
+              <Ionicons name="calendar" size={24} color="#4DD0E1" />
+              <Text style={styles.earningValue}>R$ {weekEarnings.toFixed(2)}</Text>
+              <Text style={styles.earningLabel}>Esta semana</Text>
+            </View>
 
-          <View style={styles.statItem}>
-            <Ionicons name="card-outline" size={32} color="#4DD0E1" />
-            <Text style={styles.statValue}>{pixKey}</Text>
-            <Text style={styles.statLabel}>Chave PIX</Text>
+            <View style={styles.earningItem}>
+              <Ionicons name="stats-chart" size={24} color="#4CAF50" />
+              <Text style={styles.earningValue}>R$ {monthEarnings.toFixed(2)}</Text>
+              <Text style={styles.earningLabel}>Este mês</Text>
+            </View>
           </View>
+        </View>
+
+        {/* Ações rápidas */}
+        <View style={styles.quickActionsContainer}>
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            onPress={() => setShowBankAccountsModal(true)}
+          >
+            <Ionicons name="card" size={24} color={COLORS.primary} />
+            <Text style={styles.quickActionText}>Gerenciar Contas</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            onPress={() => setShowPayPlatformModal(true)}
+          >
+            <Ionicons name="wallet" size={24} color="#FF9800" />
+            <Text style={styles.quickActionText}>Pagar Taxas</Text>
+            {pendingFees > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>R$ {pendingFees.toFixed(2)}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Histórico de transações */}
@@ -164,43 +223,172 @@ export default function DriverWalletScreen() {
           ))}
         </View>
 
+        {/* Modal: Solicitar Saque */}
         {showWithdrawModal && (
-          <View style={styles.withdrawModal}>
-            <View style={styles.withdrawModalContent}>
-              <Text style={styles.withdrawModalTitle}>Solicitar Saque</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Solicitar Saque</Text>
 
-              <Text style={styles.withdrawModalLabel}>Valor (R$):</Text>
+              <Text style={styles.modalLabel}>Valor (R$):</Text>
               <TextInput
-                style={styles.withdrawModalInput}
+                style={styles.modalInput}
                 placeholder="0,00"
                 value={withdrawAmount}
                 onChangeText={setWithdrawAmount}
                 keyboardType="decimal-pad"
               />
 
-              <Text style={styles.withdrawModalInfo}>
+              <Text style={styles.modalInfo}>
                 Saldo disponível: R$ {balance.toFixed(2)}{'\n'}
                 Mínimo: R$ {MINIMUM_WITHDRAWAL.toFixed(2)}{'\n'}
-                Chave PIX: {pixKey}
+                Conta padrão: {bankAccounts.find(a => a.default)?.label}
               </Text>
 
-              <View style={styles.withdrawModalButtons}>
+              <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={styles.withdrawModalButtonCancel}
+                  style={styles.modalButtonCancel}
                   onPress={() => {
                     setShowWithdrawModal(false);
                     setWithdrawAmount('');
                   }}
                 >
-                  <Text style={styles.withdrawModalButtonCancelText}>Cancelar</Text>
+                  <Text style={styles.modalButtonCancelText}>Cancelar</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.withdrawModalButtonConfirm}
+                  style={styles.modalButtonConfirm}
                   onPress={handleRequestWithdrawal}
                 >
-                  <Text style={styles.withdrawModalButtonConfirmText}>Confirmar</Text>
+                  <Text style={styles.modalButtonConfirmText}>Confirmar</Text>
                 </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Modal: Gerenciar Contas Bancárias */}
+        {showBankAccountsModal && (
+          <View style={styles.modalOverlay}>
+            <ScrollView style={styles.modalContentFull}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Gerenciar Contas</Text>
+                <TouchableOpacity onPress={() => setShowBankAccountsModal(false)}>
+                  <Ionicons name="close" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+
+              {bankAccounts.map((account) => (
+                <View key={account.id} style={styles.bankAccountItem}>
+                  <View style={styles.bankAccountIcon}>
+                    <Ionicons
+                      name={account.type === 'pix' ? 'qr-code' : 'business'}
+                      size={24}
+                      color={account.default ? COLORS.primary : '#666'}
+                    />
+                  </View>
+
+                  <View style={styles.bankAccountInfo}>
+                    <Text style={styles.bankAccountLabel}>{account.label}</Text>
+                    {account.type === 'pix' && (
+                      <Text style={styles.bankAccountDetail}>{account.key}</Text>
+                    )}
+                    {account.type === 'bank' && (
+                      <Text style={styles.bankAccountDetail}>
+                        Ag: {account.agency} - Conta: {account.account}
+                      </Text>
+                    )}
+                    {account.default && (
+                      <Text style={styles.bankAccountDefault}>✓ Padrão</Text>
+                    )}
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      Alert.alert(
+                        'Remover conta?',
+                        `Deseja remover ${account.label}?`,
+                        [
+                          { text: 'Cancelar', style: 'cancel' },
+                          {
+                            text: 'Remover',
+                            style: 'destructive',
+                            onPress: () => {
+                              if (account.default) {
+                                Alert.alert('Erro', 'Não é possível remover a conta padrão.');
+                              } else {
+                                setBankAccounts(bankAccounts.filter(a => a.id !== account.id));
+                                Alert.alert('Sucesso', 'Conta removida!');
+                              }
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                  >
+                    <Ionicons name="trash" size={20} color="#FF6B6B" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              <TouchableOpacity
+                style={styles.addAccountButton}
+                onPress={() => {
+                  Alert.alert(
+                    'Adicionar Conta',
+                    'Funcionalidade em desenvolvimento.\n\nEm breve você poderá adicionar novas contas bancárias e chaves PIX!'
+                  );
+                }}
+              >
+                <Ionicons name="add-circle" size={24} color={COLORS.primary} />
+                <Text style={styles.addAccountText}>Adicionar Nova Conta</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Modal: Pagar Taxas à Plataforma */}
+        {showPayPlatformModal && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Pagar Taxas XiqueGo</Text>
+
+              <View style={styles.feeCard}>
+                <Ionicons name="alert-circle" size={48} color="#FF9800" />
+                <Text style={styles.feeAmount}>R$ {pendingFees.toFixed(2)}</Text>
+                <Text style={styles.feeLabel}>Taxa pendente</Text>
+              </View>
+
+              <Text style={styles.modalInfo}>
+                {pendingFees > 0
+                  ? 'Você tem taxas pendentes de pagamento.\n\nQuer pagar agora?'
+                  : 'Você não tem taxas pendentes no momento.'}
+              </Text>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButtonCancel}
+                  onPress={() => setShowPayPlatformModal(false)}
+                >
+                  <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                {pendingFees > 0 && (
+                  <TouchableOpacity
+                    style={styles.modalButtonConfirm}
+                    onPress={() => {
+                      if (balance >= pendingFees) {
+                        setBalance(balance - pendingFees);
+                        setPendingFees(0);
+                        setShowPayPlatformModal(false);
+                        Alert.alert('Pagamento realizado!', 'Suas taxas foram pagas com sucesso.');
+                      } else {
+                        Alert.alert('Saldo insuficiente', 'Você não possui saldo suficiente para pagar as taxas.');
+                      }
+                    }}
+                  >
+                    <Text style={styles.modalButtonConfirmText}>Pagar Agora</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>
@@ -277,6 +465,85 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
+  },
+  earningsContainer: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  earningsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 16,
+  },
+  earningsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  earningItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  earningValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  earningLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  quickActionsContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 20,
+    gap: 12,
+  },
+  quickActionButton: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
+  },
+  quickActionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#000',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#FFF',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -358,7 +625,7 @@ const styles = StyleSheet.create({
   transactionAmountNegative: {
     color: '#FF6B6B',
   },
-  withdrawModal: {
+  modalOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -369,26 +636,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  withdrawModalContent: {
+  modalContent: {
     backgroundColor: '#FFF',
     borderRadius: 16,
     padding: 24,
     width: '100%',
+    maxWidth: 400,
   },
-  withdrawModalTitle: {
+  modalContentFull: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxHeight: '80%',
+    marginHorizontal: '5%',
+    marginVertical: '10%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 20,
     textAlign: 'center',
   },
-  withdrawModalLabel: {
+  modalLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#666',
     marginBottom: 8,
   },
-  withdrawModalInput: {
+  modalInput: {
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
@@ -397,16 +680,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
   },
-  withdrawModalInfo: {
+  modalInfo: {
     fontSize: 13,
     color: '#666',
     marginBottom: 24,
     lineHeight: 20,
+    textAlign: 'center',
   },
-  withdrawModalButtons: {
+  modalButtons: {
     flexDirection: 'row',
   },
-  withdrawModalButtonCancel: {
+  modalButtonCancel: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
@@ -415,12 +699,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
-  withdrawModalButtonCancelText: {
+  modalButtonCancelText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#666',
   },
-  withdrawModalButtonConfirm: {
+  modalButtonConfirm: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
@@ -428,10 +712,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 8,
   },
-  withdrawModalButtonConfirmText: {
+  modalButtonConfirmText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFF',
+  },
+  bankAccountItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  bankAccountIcon: {
+    marginRight: 12,
+  },
+  bankAccountInfo: {
+    flex: 1,
+  },
+  bankAccountLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 4,
+  },
+  bankAccountDetail: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+  },
+  bankAccountDefault: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  addAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderStyle: 'dashed',
+  },
+  addAccountText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginLeft: 8,
+  },
+  feeCard: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  feeAmount: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FF9800',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  feeLabel: {
+    fontSize: 14,
+    color: '#666',
   },
 });
 
