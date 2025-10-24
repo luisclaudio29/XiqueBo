@@ -41,11 +41,11 @@ export default function HomeScreen() {
   };
 
   const handleRideRequest = () => {
-    router.push('/request-service');
+    router.push({ pathname: '/order/category', params: { mode: 'corrida' } });
   };
 
   const handleDeliveryRequest = () => {
-    router.push('/request-service');
+    router.push({ pathname: '/order/category', params: { mode: 'entrega' } });
   };
 
   const favoriteAddresses = [
