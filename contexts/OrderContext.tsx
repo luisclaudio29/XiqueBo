@@ -36,6 +36,10 @@ export interface Location {
   longitude: number;
   address: string;
   label?: string; // "Casa", "Trabalho", etc
+  requestedFor?: {
+    name: string;
+    phone: string;
+  }; // Pedir para outra pessoa
 }
 
 export interface RouteEstimate {
