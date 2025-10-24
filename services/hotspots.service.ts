@@ -42,79 +42,142 @@ class HotspotsService {
   getHotspotsAtivos(horaAtual: number, diaAtual: number): Hotspot[] {
     const hotspots: Hotspot[] = [];
 
+    // FEIRA LIVRE - Quarta e Sábado (6h-12h)
+    if ((diaAtual === 3 || diaAtual === 6) && horaAtual >= 5 && horaAtual <= 12) {
+      hotspots.push({
+        id: 'feira-livre',
+        nome: 'Feira Livre de Xique-Xique',
+        tipo: 'feira',
+        localizacao: {
+          latitude: -10.8230,
+          longitude: -42.7268,
+          endereco: 'Centro - Praça da Feira',
+        },
+        nivel: 'muito-alto',
+        icone: '🛒',
+        descricao: 'FEIRA - Movimento intenso de feirantes e compradores',
+        horarioPico: '6h-11h',
+        diasAtivo: ['quarta', 'sábado'],
+        estimativaCorridas: 120,
+      });
+    }
+
+    // AVENIDA JJ SEABRA - Principal da cidade
+    if (horaAtual >= 6 && horaAtual <= 22) {
+      let nivelAvenida: 'alto' | 'medio' | 'baixo' = 'medio';
+      let corridas = 25;
+      
+      // Picos na Av. JJ Seabra
+      if ((horaAtual >= 6 && horaAtual <= 9) || (horaAtual >= 17 && horaAtual <= 19)) {
+        nivelAvenida = 'alto';
+        corridas = 45;
+      }
+
+      hotspots.push({
+        id: 'av-jj-seabra',
+        nome: 'Avenida JJ Seabra',
+        tipo: 'outro',
+        localizacao: {
+          latitude: -10.8236,
+          longitude: -42.7273,
+          endereco: 'Av. JJ Seabra - Via Principal',
+        },
+        nivel: nivelAvenida,
+        icone: '🛣️',
+        descricao: 'Principal avenida da cidade - sempre movimentada',
+        horarioPico: '7h-9h e 17h-19h',
+        estimativaCorridas: corridas,
+      });
+    }
+
     // HORÁRIO MANHÃ (6h-9h) - Escolas
     if (horaAtual >= 6 && horaAtual <= 9) {
       hotspots.push(
         {
-          id: 'escola-estadual',
-          nome: 'Colégio Estadual',
+          id: 'colegio-estadual',
+          nome: 'Colégio Estadual Luís Viana Filho',
           tipo: 'escola',
           localizacao: {
-            latitude: -10.8236,
-            longitude: -42.7273,
-            endereco: 'Centro, Xique-Xique',
+            latitude: -10.8242,
+            longitude: -42.7265,
+            endereco: 'Av. JJ Seabra, Centro',
           },
           nivel: 'alto',
           icone: '🏫',
-          descricao: 'Alta demanda de estudantes chegando',
+          descricao: 'Entrada de estudantes - Ensino Médio',
           horarioPico: '6h30-7h30',
-          estimativaCorridas: 35,
+          estimativaCorridas: 42,
         },
         {
-          id: 'escola-municipal',
-          nome: 'Escola Municipal',
+          id: 'escola-municipal-centro',
+          nome: 'Escolas Municipais (Centro)',
           tipo: 'escola',
           localizacao: {
-            latitude: -10.8245,
-            longitude: -42.7280,
-            endereco: 'Bairro Novo, Xique-Xique',
+            latitude: -10.8238,
+            longitude: -42.7270,
+            endereco: 'Centro, Xique-Xique',
           },
           nivel: 'alto',
           icone: '🏫',
           descricao: 'Entrada de alunos',
           horarioPico: '6h45-7h30',
-          estimativaCorridas: 28,
+          estimativaCorridas: 35,
         }
       );
     }
 
-    // HORÁRIO ALMOÇO (11h-14h) - Restaurantes
+    // HORÁRIO ALMOÇO (11h-14h) - Restaurantes e Centro
     if (horaAtual >= 11 && horaAtual <= 14) {
       hotspots.push(
         {
           id: 'centro-comercial',
-          nome: 'Centro Comercial',
+          nome: 'Centro Comercial (Praça)',
           tipo: 'bairro',
           localizacao: {
-            latitude: -10.8236,
-            longitude: -42.7273,
-            endereco: 'Centro, Xique-Xique',
+            latitude: -10.8234,
+            longitude: -42.7271,
+            endereco: 'Praça Central, Centro',
           },
           nivel: 'muito-alto',
           icone: '🍽️',
-          descricao: 'Horário de almoço - muita movimentação',
-          horarioPico: '11h30-13h',
-          estimativaCorridas: 45,
+          descricao: 'Horário de almoço - comércio e restaurantes',
+          horarioPico: '11h30-13h30',
+          estimativaCorridas: 55,
         },
         {
-          id: 'restaurante-popular',
-          nome: 'Área de Restaurantes',
+          id: 'restaurantes-jj-seabra',
+          nome: 'Restaurantes - Av. JJ Seabra',
           tipo: 'restaurante',
           localizacao: {
-            latitude: -10.8240,
-            longitude: -42.7270,
-            endereco: 'Av. Principal, Xique-Xique',
+            latitude: -10.8236,
+            longitude: -42.7273,
+            endereco: 'Av. JJ Seabra, Centro',
           },
           nivel: 'alto',
           icone: '🍴',
-          descricao: 'Restaurantes lotados',
-          horarioPico: '12h-13h30',
-          estimativaCorridas: 32,
+          descricao: 'Restaurantes da avenida principal',
+          horarioPico: '12h-14h',
+          estimativaCorridas: 38,
+        },
+        {
+          id: 'prefeitura-camara',
+          nome: 'Prefeitura / Câmara',
+          tipo: 'outro',
+          localizacao: {
+            latitude: -10.8238,
+            longitude: -42.7275,
+            endereco: 'Centro Administrativo',
+          },
+          nivel: 'medio',
+          icone: '🏛️',
+          descricao: 'Saída de funcionários para almoço',
+          horarioPico: '11h30-13h',
+          estimativaCorridas: 22,
         }
       );
     }
 
-    // TARDE (17h-19h) - Saída escolas e trabalho
+    // TARDE (17h-19h) - Saída escolas, trabalho e comércio
     if (horaAtual >= 17 && horaAtual <= 19) {
       hotspots.push(
         {
@@ -123,51 +186,130 @@ class HotspotsService {
           tipo: 'escola',
           localizacao: {
             latitude: -10.8240,
-            longitude: -42.7275,
+            longitude: -42.7268,
             endereco: 'Centro, Xique-Xique',
           },
           nivel: 'muito-alto',
           icone: '🏫',
-          descricao: 'Saída de alunos - pico de demanda',
+          descricao: 'Saída de alunos - pico máximo de demanda',
           horarioPico: '17h-18h30',
-          estimativaCorridas: 52,
+          estimativaCorridas: 65,
         },
         {
           id: 'comercio-centro',
-          nome: 'Comércio Centro',
+          nome: 'Comércio Centro (Av. JJ Seabra)',
           tipo: 'bairro',
           localizacao: {
             latitude: -10.8236,
             longitude: -42.7273,
-            endereco: 'Centro, Xique-Xique',
+            endereco: 'Av. JJ Seabra, Centro',
+          },
+          nivel: 'muito-alto',
+          icone: '🏪',
+          descricao: 'Fechamento do comércio - muito movimento',
+          horarioPico: '17h30-19h',
+          estimativaCorridas: 58,
+        },
+        {
+          id: 'bancos-lotéricas',
+          nome: 'Agências Bancárias / Lotéricas',
+          tipo: 'outro',
+          localizacao: {
+            latitude: -10.8234,
+            longitude: -42.7270,
+            endereco: 'Centro',
           },
           nivel: 'alto',
-          icone: '🏪',
-          descricao: 'Fechamento do comércio',
-          horarioPico: '17h30-19h',
-          estimativaCorridas: 38,
+          icone: '🏦',
+          descricao: 'Horário final de pagamentos e saques',
+          horarioPico: '15h-17h',
+          estimativaCorridas: 32,
         }
       );
     }
 
-    // NOITE (19h-23h) - Lazer, festas
+    // RODOVIÁRIA - Dia todo com picos
+    if (horaAtual >= 5 && horaAtual <= 22) {
+      let nivelRodoviaria: 'alto' | 'medio' | 'baixo' = 'medio';
+      let corridasRodoviaria = 18;
+      
+      // Picos: manhã cedo e tarde
+      if ((horaAtual >= 5 && horaAtual <= 7) || (horaAtual >= 16 && horaAtual <= 18)) {
+        nivelRodoviaria = 'alto';
+        corridasRodoviaria = 35;
+      }
+
+      hotspots.push({
+        id: 'rodoviaria',
+        nome: 'Rodoviária de Xique-Xique',
+        tipo: 'outro',
+        localizacao: {
+          latitude: -10.8228,
+          longitude: -42.7285,
+          endereco: 'Entrada da Cidade',
+        },
+        nivel: nivelRodoviaria,
+        icone: '🚌',
+        descricao: 'Chegada e saída de ônibus',
+        horarioPico: '5h-7h e 16h-18h',
+        estimativaCorridas: corridasRodoviaria,
+      });
+    }
+
+    // ORLA DO RIO SÃO FRANCISCO - Lazer
+    if (horaAtual >= 6 && horaAtual <= 21) {
+      hotspots.push({
+        id: 'orla-rio',
+        nome: 'Orla do Rio São Francisco',
+        tipo: 'outro',
+        localizacao: {
+          latitude: -10.8220,
+          longitude: -42.7290,
+          endereco: 'Beira do Rio',
+        },
+        nivel: horaAtual >= 17 ? 'alto' : 'medio',
+        icone: '🌊',
+        descricao: 'Área de lazer e pescadores',
+        horarioPico: '17h-20h (fim de tarde)',
+        estimativaCorridas: horaAtual >= 17 ? 28 : 12,
+      });
+    }
+
+    // NOITE (19h-23h) - Lazer, festas, bares
     if (horaAtual >= 19 && horaAtual <= 23) {
-      // Sexta e Sábado - Festas
+      // Praça à noite
+      hotspots.push({
+        id: 'praca-noite',
+        nome: 'Praça Central',
+        tipo: 'bairro',
+        localizacao: {
+          latitude: -10.8234,
+          longitude: -42.7271,
+          endereco: 'Praça Central',
+        },
+        nivel: 'medio',
+        icone: '🌃',
+        descricao: 'Movimento noturno - jovens e famílias',
+        horarioPico: '19h-22h',
+        estimativaCorridas: 25,
+      });
+
+      // Sexta e Sábado - Bares e Festas
       if (diaAtual === 5 || diaAtual === 6) {
         hotspots.push({
-          id: 'area-festas',
-          nome: 'Área de Festas e Lazer',
+          id: 'bares-jj-seabra',
+          nome: 'Bares - Av. JJ Seabra',
           tipo: 'festa',
           localizacao: {
-            latitude: -10.8250,
-            longitude: -42.7280,
-            endereco: 'Zona de Lazer, Xique-Xique',
+            latitude: -10.8236,
+            longitude: -42.7273,
+            endereco: 'Av. JJ Seabra',
           },
           nivel: 'muito-alto',
-          icone: '🎉',
-          descricao: 'Fim de semana - festas e bares lotados',
+          icone: '🍺',
+          descricao: 'Fim de semana - bares lotados',
           horarioPico: '20h-2h',
-          estimativaCorridas: 65,
+          estimativaCorridas: 75,
         });
       }
     }
@@ -175,19 +317,38 @@ class HotspotsService {
     // SEMPRE ATIVO - Hospital
     hotspots.push({
       id: 'hospital',
-      nome: 'Hospital Municipal',
+      nome: 'Hospital Municipal de Xique-Xique',
       tipo: 'hospital',
       localizacao: {
         latitude: -10.8245,
         longitude: -42.7265,
-        endereco: 'Centro, Xique-Xique',
+        endereco: 'Centro',
       },
       nivel: 'medio',
       icone: '🏥',
-      descricao: 'Sempre com demanda de emergências',
+      descricao: 'Emergências 24h - sempre com demanda',
       horarioPico: '24h',
-      estimativaCorridas: 15,
+      estimativaCorridas: 18,
     });
+
+    // SEMPRE ATIVO - Igreja Matriz (eventos religiosos)
+    if (diaAtual === 0 || (horaAtual >= 18 && horaAtual <= 20)) {
+      hotspots.push({
+        id: 'igreja-matriz',
+        nome: 'Igreja Matriz',
+        tipo: 'outro',
+        localizacao: {
+          latitude: -10.8235,
+          longitude: -42.7272,
+          endereco: 'Praça da Matriz, Centro',
+        },
+        nivel: diaAtual === 0 ? 'alto' : 'medio',
+        icone: '⛪',
+        descricao: diaAtual === 0 ? 'Domingo - Missas' : 'Cultos e eventos religiosos',
+        horarioPico: diaAtual === 0 ? '8h-12h e 18h-20h' : '18h-20h',
+        estimativaCorridas: diaAtual === 0 ? 42 : 18,
+      });
+    }
 
     return hotspots;
   }

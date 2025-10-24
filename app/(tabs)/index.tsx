@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [userName, setUserName] = useState('Cliente');
   const [userAddress, setUserAddress] = useState('Carregando localização...');
+  const [userType, setUserType] = useState<'cliente' | 'motorista'>('cliente');
   const [notificationCount, setNotificationCount] = useState(3);
   const [onlineDrivers, setOnlineDrivers] = useState(23);
 
@@ -30,6 +31,14 @@ export default function HomeScreen() {
       const user = await AuthService.getCurrentUser();
       if (user) {
         setUserName(user.nome || 'Cliente');
+        
+        // Define o tipo de usuário (motorista ou cliente)
+        if (user.tipoUsuario === 'motorista' || user.cadastroMotorista) {
+          setUserType('motorista');
+        } else {
+          setUserType('cliente');
+        }
+        
         if (user.endereco) {
           const addr = user.endereco;
           setUserAddress(`${addr.rua || ''}, ${addr.cidade || 'Xique-Xique'} - ${addr.estado || 'BA'}`);
@@ -253,7 +262,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Botão Flutuante de Hotspots - Só para Motoristas */}
-      <HotspotsButton userType="cliente" />
+      {userType === 'motorista' && <HotspotsButton userType={userType} />}
     </View>
   );
 }
