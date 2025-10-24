@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -90,10 +91,26 @@ export default function TrackingScreen() {
   };
 
   const handleSOS = () => {
+    // Mock: contato de emergência
+    const emergencyContact = {
+      name: 'Maria Bastos',
+      phone: '71999887766',
+      relationship: 'Mãe',
+    };
+
     Alert.alert(
-      '🆘 SOS Acionado',
-      'Em caso de emergência, você será redirecionado para central de segurança.',
-      [{ text: 'OK' }]
+      '🆘 SOS - Emergência',
+      `Ligar para ${emergencyContact.name} (${emergencyContact.relationship})?\n\nTelefone: ${emergencyContact.phone}`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Ligar agora',
+          style: 'destructive',
+          onPress: () => {
+            Linking.openURL(`tel:${emergencyContact.phone}`);
+          },
+        },
+      ]
     );
   };
 

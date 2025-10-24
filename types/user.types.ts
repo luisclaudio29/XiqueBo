@@ -43,6 +43,13 @@ export interface UserData {
     cnhExpiry?: string;
   };
   
+  // Contato de emergência
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relationship?: string; // Pai, Mãe, Cônjuge, Amigo, etc
+  };
+  
   // Estatísticas
   stats?: {
     totalRides: number;

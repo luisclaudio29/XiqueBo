@@ -74,6 +74,15 @@ export interface Driver {
   location?: Location;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  photo?: string;
+  rating: number;
+  totalTrips: number;
+  phone: string;
+}
+
 export interface Vehicle {
   brand: string;
   model: string;
@@ -101,9 +110,16 @@ export interface Order {
   status: OrderStatus;
   driver?: Driver;
   vehicle?: Vehicle;
+  client?: Client; // Dados do cliente (para motorista ver)
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;
+  
+  // Avaliações
+  clientRating?: number; // Cliente avalia motorista
+  clientComment?: string;
+  driverRating?: number; // Motorista avalia cliente
+  driverComment?: string;
 }
 
 interface OrderContextData {
@@ -148,7 +164,7 @@ interface OrderContextData {
   cancelOrder: (reason?: string) => void;
   
   // Finalizar
-  completeOrder: (rating: number, comment?: string) => void;
+  completeOrder: (clientRating: number, clientComment?: string, driverRating?: number, driverComment?: string) => void;
   
   // Validações
   canProceed: () => boolean;
@@ -164,11 +180,21 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   // INICIALIZAR
   // ===========================
   const startOrder = (mode: ServiceMode) => {
+    // Mock: dados do cliente
+    const mockClient: Client = {
+      id: 'CLI-001',
+      name: 'Andreia Bastos',
+      rating: 4.8,
+      totalTrips: 45,
+      phone: '71982633972',
+    };
+
     const newOrder: Order = {
       id: `ORD-${Date.now()}`,
       mode,
       category: mode === 'corrida' ? 'moto' : 'bicicleta',
       status: 'selecting_category',
+      client: mockClient,
       createdAt: new Date(),
     };
     
@@ -445,16 +471,23 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   // ===========================
   // FINALIZAR
   // ===========================
-  const completeOrder = (rating: number, comment?: string) => {
+  const completeOrder = (clientRating: number, clientComment?: string, driverRating?: number, driverComment?: string) => {
     if (!order) return;
     
     setOrder({
       ...order,
       status: 'completed',
       completedAt: new Date(),
+      clientRating,
+      clientComment,
+      driverRating,
+      driverComment,
     });
     
-    console.log('[OrderContext] Pedido concluído. Avaliação:', rating, comment);
+    console.log('[OrderContext] Pedido concluído. Avaliação cliente:', clientRating, clientComment);
+    if (driverRating) {
+      console.log('[OrderContext] Avaliação motorista sobre cliente:', driverRating, driverComment);
+    }
   };
 
   // ===========================
