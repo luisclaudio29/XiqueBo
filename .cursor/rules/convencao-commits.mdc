@@ -1,0 +1,92 @@
+---
+alwaysApply: true
+description: Convenção de commits - uma tarefa por commit com formato padronizado
+---
+
+# Convenção de Commits
+
+## Regra Fundamental
+**Cada tarefa implementada = 1 commit**
+
+## Formato Obrigatório de Mensagens
+
+### Para Novas Funcionalidades
+```
+feat: [descrição clara da ação/funcionalidade implementada]
+```
+
+**Exemplos:**
+- `feat: adiciona sistema de autenticação com Google`
+- `feat: implementa tela de perfil do motorista`
+- `feat: cria componente de seleção de veículos`
+- `feat: adiciona integração com API de pagamentos`
+
+### Para Correções de Bugs
+```
+fix: [descrição clara do problema resolvido]
+```
+
+**Exemplos:**
+- `fix: corrige erro de validação no formulário de login`
+- `fix: resolve crash ao carregar mapa sem internet`
+- `fix: ajusta cálculo de preço para entregas`
+- `fix: corrige layout quebrado em telas pequenas`
+
+## Diretrizes Adicionais
+
+### Quando Commitar
+- Após completar uma funcionalidade ou correção completa
+- Código deve estar funcional e testado
+- Nunca commitar código que não compila ou com erros evidentes
+
+### Mensagens Devem Ser:
+- **Claras**: qualquer pessoa deve entender o que foi feito
+- **Objetivas**: direto ao ponto, sem enrolação
+- **Em português**: manter consistência com o projeto
+- **Descritivas**: explicar O QUE foi feito, não COMO
+
+### Escopo Opcional
+Pode-se adicionar escopo para melhor organização:
+```
+feat(auth): adiciona login com Facebook
+fix(map): corrige carregamento de marcadores
+feat(payment): implementa pagamento via PIX
+```
+
+### Outros Tipos (Opcional)
+Para casos específicos, pode-se usar:
+- `refactor: [melhoria no código sem mudar funcionalidade]`
+- `style: [mudanças de formatação, espaçamento, etc]`
+- `docs: [mudanças em documentação]`
+- `chore: [tarefas de manutenção, atualizações de dependências]`
+
+## Fluxo de Trabalho
+
+1. **Implementar** uma funcionalidade completa
+2. **Testar** que está funcionando
+3. **Commitar** com mensagem no formato correto
+4. **Repetir** para próxima tarefa
+
+## Exemplos Completos
+
+### ✅ Bom
+```bash
+git commit -m "feat: adiciona filtro de veículos por ano"
+git commit -m "fix: corrige erro ao salvar dados do motorista"
+git commit -m "feat(profile): implementa edição de foto do usuário"
+```
+
+### ❌ Ruim
+```bash
+git commit -m "mudanças"
+git commit -m "wip"
+git commit -m "correções várias"
+git commit -m "Adicionei umas coisas no perfil e arrumei o mapa"
+```
+
+## Benefícios
+- Histórico de commits limpo e legível
+- Fácil identificação do que cada commit faz
+- Facilita rollback de mudanças específicas
+- Melhora colaboração em equipe
+- Permite geração automática de changelogs

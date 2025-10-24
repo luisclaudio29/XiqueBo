@@ -1,0 +1,88 @@
+---
+alwaysApply: true
+description: Diretrizes para implementação incremental e confirmação de escopo
+---
+
+# Implementação Incremental e Confirmação de Escopo
+
+## Princípios Fundamentais
+
+### 1. Uma Funcionalidade por Vez
+- **SEMPRE** implemente apenas uma funcionalidade completa por interação
+- Não inicie uma nova funcionalidade até que a atual esteja totalmente implementada e testada
+- Divida funcionalidades complexas em sub-tarefas menores e implementáveis
+
+### 2. Divisão de Prompts Grandes
+Quando receber um prompt complexo ou com múltiplas solicitações:
+- **PAUSE** antes de começar a implementar
+- Identifique todas as funcionalidades distintas solicitadas
+- Liste as funcionalidades encontradas em ordem lógica de implementação
+- Proponha uma divisão clara das tarefas em etapas numeradas
+
+### 3. Confirmação de Escopo Obrigatória
+Antes de gerar qualquer código para solicitações complexas:
+- Apresente uma análise do escopo identificado
+- Liste claramente:
+  - Arquivos que serão modificados
+  - Arquivos novos que serão criados
+  - Funcionalidades específicas a implementar
+  - Ordem de implementação proposta
+- **AGUARDE** confirmação explícita do usuário antes de prosseguir
+- Pergunte: "Posso prosseguir com esta primeira etapa?" ou similar
+
+## Exemplo de Fluxo Correto
+
+### Solicitação: "Adicione autenticação, dashboard e sistema de notificações"
+
+**Resposta Correta:**
+```
+Identifiquei 3 funcionalidades distintas na sua solicitação:
+
+1. Sistema de Autenticação
+   - Login/Logout
+   - Gerenciamento de sessão
+   - Proteção de rotas
+
+2. Dashboard
+   - Interface principal
+   - Widgets de dados
+   - Layout responsivo
+
+3. Sistema de Notificações
+   - Notificações em tempo real
+   - Histórico de notificações
+   - Preferências do usuário
+
+Sugiro implementar nesta ordem, começando pela autenticação.
+
+Para a primeira etapa (Autenticação), vou:
+- Criar services/authService.ts
+- Criar contexts/AuthContext.tsx
+- Modificar app/_layout.tsx para proteção de rotas
+- Criar telas: app/login.tsx e app/register.tsx
+
+Posso prosseguir com a implementação da autenticação?
+```
+
+## Casos Especiais
+
+### Prompts Simples
+Para solicitações claramente simples e diretas (ex: "corrija o erro de digitação na linha 23"), implemente diretamente sem confirmação.
+
+### Urgência
+Se o usuário indicar urgência (ex: "rápido, corrija isso agora"), use seu julgamento mas mantenha o foco em uma coisa por vez.
+
+### Refatorações
+Para refatorações, sempre liste os arquivos impactados e confirme o escopo antes de proceder.
+
+## Benefícios desta Abordagem
+- Reduz erros por sobrecarga de mudanças simultâneas
+- Facilita revisão e debugging
+- Permite ajustes de direção entre etapas
+- Mantém o código organizado e rastreável
+- Evita retrabalho por mal-entendidos
+
+## Após Cada Implementação
+- Resuma o que foi implementado
+- Liste os próximos passos pendentes
+- Pergunte se deve prosseguir para a próxima funcionalidade
