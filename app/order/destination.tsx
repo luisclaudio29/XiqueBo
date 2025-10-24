@@ -22,11 +22,12 @@ import { getPovoados, getPovoadsNomes, getNomeOficial } from '@/constants/povoad
 
 export default function SelectDestinationScreen() {
   const router = useRouter();
-  const { order, setDestination, calculateRoute } = useOrder();
+  const { order, setDestination, addStop, calculateRoute } = useOrder();
   
   const [searchText, setSearchText] = useState('');
   const [showPovoadosModal, setShowPovoadosModal] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [addingStop, setAddingStop] = useState(false);
 
   useEffect(() => {
     loadSuggestions();
@@ -67,6 +68,21 @@ export default function SelectDestinationScreen() {
       return;
     }
 
+    if (addingStop) {
+      // Adicionar parada intermediária
+      addStop({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        address: location.address,
+        label: location.label,
+      });
+      setAddingStop(false);
+      setSearchText('');
+      Alert.alert('Parada adicionada!', 'Continue para definir o destino final.');
+      return;
+    }
+
+    // Definir destino final
     setDestination({
       latitude: location.latitude,
       longitude: location.longitude,
@@ -149,6 +165,19 @@ export default function SelectDestinationScreen() {
           </View>
         </View>
 
+        {/* Paradas (se houver) */}
+        {order.stops && order.stops.map((stop, index) => (
+          <View key={index} style={styles.stopConfirmed}>
+            <Ionicons name="location" size={16} color="#FF9800" />
+            <View style={styles.stopInfo}>
+              <Text style={styles.stopLabel}>Parada {index + 1}</Text>
+              <Text style={styles.stopAddress} numberOfLines={1}>
+                {stop.address}
+              </Text>
+            </View>
+          </View>
+        ))}
+
         {/* Campo de busca */}
         <View style={styles.searchContainer}>
           <View style={styles.searchIcon}>
@@ -156,7 +185,7 @@ export default function SelectDestinationScreen() {
           </View>
           <TextInput
             style={styles.searchInput}
-            placeholder="Digite o endereço de destino..."
+            placeholder={addingStop ? "Digite a parada..." : "Digite o endereço de destino..."}
             value={searchText}
             onChangeText={setSearchText}
             onSubmitEditing={handleManualEntry}
@@ -169,6 +198,17 @@ export default function SelectDestinationScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Botão Adicionar Parada (só se ainda não tiver parada) */}
+        {!addingStop && (!order.stops || order.stops.length === 0) && (
+          <TouchableOpacity
+            style={styles.addStopButton}
+            onPress={() => setAddingStop(true)}
+          >
+            <Ionicons name="add-circle" size={24} color={COLORS.primary} />
+            <Text style={styles.addStopText}>Adicionar parada (máx. 1)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Botão Povoados (só para entrega rural) */}
         {showPovoadosButton && (
@@ -303,6 +343,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#2E7D32',
+  },
+  stopConfirmed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF3E0',
+    marginHorizontal: 20,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+  },
+  stopInfo: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  stopLabel: {
+    fontSize: 11,
+    color: '#F57C00',
+    marginBottom: 4,
+  },
+  stopAddress: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#E65100',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -450,6 +513,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#000',
     flex: 1,
+  },
+  addStopButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderStyle: 'dashed',
+  },
+  addStopText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginLeft: 8,
   },
   errorText: {
     textAlign: 'center',
