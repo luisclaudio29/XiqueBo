@@ -22,9 +22,14 @@ export default function RootLayout() {
           <Stack.Screen name="signup" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="order/category" options={{ headerShown: false }} />
+          <Stack.Screen name="order/origin" options={{ headerShown: false }} />
+          <Stack.Screen name="order/destination" options={{ headerShown: false }} />
+          <Stack.Screen name="order/details" options={{ headerShown: false }} />
+          <Stack.Screen name="order/payment" options={{ headerShown: false }} />
           <Stack.Screen name="order/summary" options={{ headerShown: false }} />
           <Stack.Screen name="order/matching" options={{ headerShown: false }} />
           <Stack.Screen name="order/tracking" options={{ headerShown: false }} />
+          <Stack.Screen name="order/completed" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         <StatusBar style="auto" />
