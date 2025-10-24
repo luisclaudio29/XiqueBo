@@ -1,0 +1,151 @@
+---
+globs: *.ts,*.tsx
+description: Regras rigorosas para tratamento de erros e warnings TypeScript
+---
+
+# TypeScript Rigoroso - Zero Tolerância
+
+## Regras Absolutas
+
+### 1. @ts-ignore É PROIBIDO Sem Justificativa
+- **NUNCA** use `@ts-ignore` sem uma explicação detalhada
+- **NUNCA** use `@ts-expect-error` sem comentário explicativo
+- Se você precisar ignorar um erro TypeScript, você DEVE:
+  1. Adicionar um comentário na linha anterior explicando POR QUÊ
+  2. Adicionar um comentário explicando QUAL é a solução ideal
+  3. Se possível, adicionar um TODO para resolver futuramente
+
+### 2. Erros TypeScript São Bloqueadores
+- **NUNCA** ignore erros de TypeScript
+- Se houver um erro de TypeScript, você DEVE corrigi-lo
+- Não há exceções: todo erro deve ser resolvido antes de commitar
+
+### 3. Warnings = Erros
+- Trate todos os warnings TypeScript como erros críticos
+- Warnings devem ser corrigidos imediatamente
+- Não deixe warnings acumularem no código
+
+## Exemplos
+
+### ❌ PROIBIDO - Sem Explicação
+```typescript
+// @ts-ignore
+const result = data.map(item => item.value);
+```
+
+### ❌ PROIBIDO - Explicação Vaga
+```typescript
+// @ts-ignore - corrigir depois
+const result = data.map(item => item.value);
+```
+
+### ✅ PERMITIDO - Com Justificativa Completa
+```typescript
+// @ts-ignore: A biblioteca externa 'legacy-lib' não possui tipos corretos.
+// O tipo esperado é string, mas a lib retorna string | undefined incorretamente.
+// TODO: Criar arquivo de declaração de tipos (.d.ts) para 'legacy-lib'
+// ou atualizar para versão 2.0 que possui tipos corretos
+const result = legacyLib.getData();
+```
+
+### ✅ MELHOR - Resolva o Problema Real
+```typescript
+// Em vez de ignorar, crie um type guard
+function isValidItem(item: unknown): item is { value: string } {
+  return typeof item === 'object' && item !== null && 'value' in item;
+}
+
+const result = data.filter(isValidItem).map(item => item.value);
+```
+
+## Alternativas ao @ts-ignore
+
+### Use Type Guards
+```typescript
+if (typeof value === 'string') {
+  // TypeScript sabe que value é string aqui
+  console.log(value.toUpperCase());
+}
+```
+
+### Use Type Assertions (com cuidado)
+```typescript
+// Preferível a @ts-ignore, mas documente por quê
+const data = response as ExpectedType;
+```
+
+### Use Unknown e Valide
+```typescript
+const data: unknown = await fetchData();
+if (isValidData(data)) {
+  // Agora data tem tipo correto
+  processData(data);
+}
+```
+
+### Crie Tipos de Declaração
+```typescript
+// types/external-lib.d.ts
+declare module 'external-lib' {
+  export function getData(): string;
+}
+```
+
+## Configuração Recomendada
+
+Certifique-se que o `tsconfig.json` está configurado rigorosamente:
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}
+```
+
+## Quando Você Encontrar Erros TypeScript
+
+### Processo Obrigatório:
+1. **Entenda** o erro completamente
+2. **Investigue** a causa raiz
+3. **Corrija** o tipo ou a lógica
+4. **Teste** que a correção funciona
+5. **NUNCA** use @ts-ignore como primeira opção
+
+### Hierarquia de Soluções (na ordem):
+1. ✅ Corrigir o tipo corretamente
+2. ✅ Adicionar validação/type guard
+3. ✅ Criar arquivo de declaração de tipos
+4. ✅ Usar type assertion com justificativa
+5. ⚠️ Usar @ts-ignore APENAS com:
+   - Comentário detalhado
+   - Explicação da causa
+   - Plano para resolver
+   - TODO rastreável
+
+## Revisão de Código
+
+Ao revisar código, rejeite automaticamente se encontrar:
+- `@ts-ignore` sem comentário de 3+ linhas
+- `@ts-expect-error` sem justificativa
+- `any` sem justificativa
+- Warnings TypeScript não resolvidos
+- Erros TypeScript ignorados
+
+## Benefícios
+- Código mais seguro e confiável
+- Menos bugs em produção
+- Melhor manutenibilidade
+- Documentação implícita através dos tipos
+- Facilita refatorações futuras
+
+---
+
+**Lembre-se:** Se TypeScript está reclamando, geralmente há um motivo válido. Não lute contra o compilador, trabalhe com ele.
