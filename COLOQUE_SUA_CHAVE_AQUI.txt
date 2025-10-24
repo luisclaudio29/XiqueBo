@@ -1,0 +1,129 @@
+
+═══════════════════════════════════════════════════════════════════════
+   🔑 ONDE COLOCAR SUA CHAVE DO GOOGLE MAPS? 
+═══════════════════════════════════════════════════════════════════════
+
+🎯 VOCÊ TEM 2 OPÇÕES:
+
+┌────────────────────────────────────────────────────────────────┐
+│ OPÇÃO 1: ARQUIVO .env (MAIS FÁCIL E SEGURO!) ✅               │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ 1. Na pasta XIQUEGO, crie um arquivo chamado: .env            │
+│                                                                │
+│    XIQUEGO/                                                    │
+│    ├── app/                                                    │
+│    ├── components/                                             │
+│    ├── .env   👈 CRIE ESTE ARQUIVO AQUI!                      │
+│    └── ...                                                     │
+│                                                                │
+│ 2. Dentro do arquivo .env, cole isto:                         │
+│                                                                │
+│    EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=SUA_CHAVE_AQUI             │
+│                                                                │
+│ 3. Substitua SUA_CHAVE_AQUI pela sua chave real:              │
+│                                                                │
+│    EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyBCd123456789...      │
+│                                                                │
+│ 4. Salve o arquivo                                             │
+│                                                                │
+│ 5. PRONTO! 🎉                                                  │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ OPÇÃO 2: ARQUIVO app.json (ALTERNATIVA)                       │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ 1. Abra o arquivo: XIQUEGO/app.json                           │
+│                                                                │
+│ 2. Procure por: "COLOQUE_SUA_CHAVE_AQUI"                      │
+│    (aparece em 3 lugares)                                      │
+│                                                                │
+│ 3. Substitua TODOS os 3 lugares pela sua chave:               │
+│                                                                │
+│    Linha ~14 (iOS):                                            │
+│    "googleMapsApiKey": "SUA_CHAVE_AQUI"                        │
+│                                                                │
+│    Linha ~28 (Android):                                        │
+│    "apiKey": "SUA_CHAVE_AQUI"                                  │
+│                                                                │
+│    Linha ~56 (Extra):                                          │
+│    "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "SUA_CHAVE_AQUI"        │
+│                                                                │
+│ 4. Salve o arquivo                                             │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+
+📍 ONDE VOCÊ DISSE QUE COLOCOU?
+
+Você disse: "VOCE USOU O API COLOQUEI NA PASTA"
+
+✅ Perfeito! Veja as 2 opções acima de onde colocar!
+
+═══════════════════════════════════════════════════════════════════════
+
+🎬 DEPOIS DE COLOCAR A CHAVE:
+
+1. Pare o servidor Expo (Ctrl+C)
+2. Inicie de novo:
+   
+   npx expo start --clear
+
+3. Abra o app
+4. Toque em "Corrida"
+5. Digite "Salvador" ou "Xique-Xique"
+6. Veja as sugestões aparecerem! 🎉
+
+═══════════════════════════════════════════════════════════════════════
+
+❓ AINDA NÃO TEM A CHAVE DO GOOGLE MAPS?
+
+Abra o arquivo: CONFIGURAR_GOOGLE_MAPS_API.md
+Lá tem o passo a passo COMPLETO! 📖
+
+Ou acesse: https://console.cloud.google.com/
+
+═══════════════════════════════════════════════════════════════════════
+
+💡 EXEMPLO DE CHAVE:
+
+AIzaSyBCd123456789abcdefghijklmnopqr_EXEMPLO
+
+(Esta é só um exemplo, use sua chave real!)
+
+═══════════════════════════════════════════════════════════════════════
+
+🔒 SEGURANÇA:
+
+✅ Arquivo .env está no .gitignore (seguro)
+✅ Não compartilhe sua chave publicamente
+✅ Configure restrições no Google Cloud Console
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 RESUMO:
+
+1. Crie o arquivo: XIQUEGO/.env
+2. Cole dentro: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=SUA_CHAVE
+3. Salve
+4. Reinicie: npx expo start --clear
+5. PRONTO! 🎉
+
+═══════════════════════════════════════════════════════════════════════
+
+✅ PRONTO PARA FUNCIONAR EM:
+
+✅ Salvador → Xique-Xique
+✅ Marreca Velha → Xique-Xique
+✅ Centro → Polivalente
+✅ QUALQUER LUGAR DO BRASIL!
+
+═══════════════════════════════════════════════════════════════════════
+
+© 2025 XiqueGo - Cole sua chave e pronto! 🔑✅
+
+═══════════════════════════════════════════════════════════════════════
+
