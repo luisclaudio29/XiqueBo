@@ -704,24 +704,20 @@ export function AddressAutocomplete({
               <Ionicons name="search-outline" size={40} color="#CCC" />
               <Text style={styles.noResultsText}>Nenhum resultado encontrado</Text>
               <Text style={styles.noResultsHint}>
-                🗺️ SISTEMA DE BUSCA COMPLETO:{'\n'}
-                {'\n'}
-                {googleWorking ? (
-                  '🌐 GOOGLE ATIVO: TODAS as ruas de Xique-Xique disponíveis!'
-                ) : (
-                  '📍 OFFLINE: 200+ ruas principais cadastradas'
-                )}
-                {'\n\n'}
-                💡 DICAS DE BUSCA:{'\n'}
-                • Digite "Rua" para ver todas as ruas{'\n'}
-                • Digite "Av" para ver avenidas{'\n'}
-                • Digite "Centro" para centro{'\n'}
-                • Digite "Marreca" para Marreca Velha{'\n'}
-                • Digite "Santo Inácio" para cidade vizinha{'\n'}
-                • Digite "Boa Vista" para nordeste{'\n'}
-                {'\n'}
-                ✅ Com internet = TODAS as ruas via Google{'\n'}
-                ✅ Sem internet = 200+ ruas sempre disponíveis
+                {'🗺️ SISTEMA DE BUSCA COMPLETO:\n\n'}
+                {googleWorking 
+                  ? '🌐 GOOGLE ATIVO: TODAS as ruas de Xique-Xique disponíveis!\n\n'
+                  : '📍 OFFLINE: 200+ ruas principais cadastradas\n\n'
+                }
+                {'💡 DICAS DE BUSCA:\n'}
+                {'• Digite "Rua" para ver todas as ruas\n'}
+                {'• Digite "Av" para ver avenidas\n'}
+                {'• Digite "Centro" para centro\n'}
+                {'• Digite "Marreca" para Marreca Velha\n'}
+                {'• Digite "Santo Inácio" para cidade vizinha\n'}
+                {'• Digite "Boa Vista" para nordeste\n\n'}
+                {'✅ Com internet = TODAS as ruas via Google\n'}
+                {'✅ Sem internet = 200+ ruas sempre disponíveis'}
               </Text>
             </View>
           )}
