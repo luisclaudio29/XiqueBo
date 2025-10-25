@@ -48,6 +48,9 @@ const LOCAL_PLACES = [
   { name: 'Rua Senador Quintino', city: 'Centro, Xique-Xique, BA', lat: -10.8237, lng: -42.7276 },
   { name: 'Rua Duque de Caxias', city: 'Centro, Xique-Xique, BA', lat: -10.8241, lng: -42.7267 },
   { name: 'Rua Marechal Deodoro', city: 'Centro, Xique-Xique, BA', lat: -10.8239, lng: -42.7270 },
+  { name: 'Rua Monsenhor Costa', city: 'Centro, Xique-Xique, BA', lat: -10.8238, lng: -42.7272 },
+  { name: 'R. Monsenhor Costa', city: 'Centro, Xique-Xique, BA', lat: -10.8238, lng: -42.7272 },
+  { name: 'Rua Monsenhor Costa, 306', city: 'Centro, Xique-Xique, BA', lat: -10.8238, lng: -42.7272 },
   
   // Travessas do Centro
   { name: 'Tv. dos Esportes', city: 'Centro, Xique-Xique, BA', lat: -10.8243, lng: -42.7269 },
