@@ -1,0 +1,30 @@
+═══════════════════════════════════════════════════════════
+  FAZER AGORA - 1 MINUTO
+═══════════════════════════════════════════════════════════
+
+1. Abra o BLOCO DE NOTAS
+
+2. Cole isto:
+   EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyCKX44ceamDY42t-aR6UFuzd52OYIa1Zdg
+   EXPO_PUBLIC_ENVIRONMENT=development
+
+3. Salvar como:
+   - Pasta: C:\ANDREIA BASTOS\APP XIQUE GO - MOVE XIQUE XIQUE\XIQUEGO
+   - Nome: .env
+   - Tipo: Todos os arquivos (*.*)
+
+4. Aguarde QR Code aparecer no terminal
+
+5. Escaneie e teste!
+
+═══════════════════════════════════════════════════════════
+  O QUE VAI ACONTECER
+═══════════════════════════════════════════════════════════
+
+✅ Digite "Rua" → TODAS as ruas de Xique-Xique aparecem!
+✅ Selecione destino → ROTA aparece no mapa!
+✅ INFINITAS opções via Google Maps!
+✅ R$ 0,00 de custo!
+
+═══════════════════════════════════════════════════════════
+
