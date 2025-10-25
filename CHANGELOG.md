@@ -14,6 +14,23 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Regra Cursor para implementação incremental e confirmação de escopo
 - Regra Cursor para convenção de commits (feat:/fix:)
 - Biblioteca Zod (v3.25.76) para validação de dados em runtime
+- Documentação completa: `COMO_ATIVAR_TODAS_AS_RUAS.md`
+- Documentação de mudanças: `O_QUE_MUDOU_BUSCA_RUAS.md`
+
+### Changed
+- **BUSCA OTIMIZADA**: Sistema de busca de endereços agora pega TODAS as ruas de Xique-Xique via Google Places API
+- Removida forçagem de "Xique-Xique BA" na query do Google (permite mais resultados)
+- Adicionados tipos ampliados de busca: `address`, `geocode`, `establishment`
+- Configurado `strictbounds=false` para não perder ruas nas bordas
+- Aumentado timeout de busca de 5s para 8s (busca mais completa)
+- Aumentado limite de resultados de 20 para 30 sugestões
+- Melhorado feedback visual: "🌐 TODAS AS RUAS - Google Places ativo"
+- Melhoradas mensagens de ajuda quando não há resultados
+
+### Technical
+- Otimizado `AddressAutocomplete` com location bias + radius (50km)
+- Implementado sistema híbrido: 200+ ruas offline + Google online
+- Configurado Google Places API para máxima cobertura de Xique-Xique
 
 ## [1.0.0] - 2024-10-24
 
