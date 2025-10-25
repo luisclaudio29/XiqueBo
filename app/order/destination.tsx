@@ -11,16 +11,21 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { COLORS } from '@/constants/colors';
 import { useOrder } from '@/contexts/OrderContext';
-import { GooglePlacesInput } from '@/components/google-places-input';
+import { AddressAutocomplete } from '@/components/address-autocomplete';
 
 export default function DestinationSelectionScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const returnTo = params.returnTo as string;
   const { order, setDestination, calculateRoute } = useOrder();
   
   const [region, setRegion] = useState({
@@ -32,6 +37,7 @@ export default function DestinationSelectionScreen() {
   
   const [markerPosition, setMarkerPosition] = useState<any>(null);
   const [selectedAddress, setSelectedAddress] = useState('');
+  const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
     if (order?.destination) {
@@ -67,6 +73,17 @@ export default function DestinationSelectionScreen() {
       return;
     }
 
+    if (!order?.origin) {
+      Alert.alert('Erro', 'Origem não definida. Por favor, volte e defina a origem primeiro.');
+      return;
+    }
+
+    // Validar coordenadas
+    if (!markerPosition.latitude || !markerPosition.longitude) {
+      Alert.alert('Erro', 'Coordenadas do destino inválidas. Selecione novamente no mapa.');
+      return;
+    }
+
     setDestination({
       latitude: markerPosition.latitude,
       longitude: markerPosition.longitude,
@@ -74,12 +91,24 @@ export default function DestinationSelectionScreen() {
     });
 
     // Calcular rota
+    setIsCalculating(true);
     try {
       await calculateRoute();
-      router.push('/order/details');
-    } catch (error) {
-      console.error('Erro ao calcular rota:', error);
-      Alert.alert('Erro', 'Não foi possível calcular a rota. Tente novamente.');
+      
+      // Se veio da tela única Uber, volta para lá
+      if (returnTo) {
+        router.back();
+      } else {
+        // Senão, vai para tela de detalhes/extras
+        router.push('/order/details');
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'Erro ao calcular rota',
+        error.message || 'Não foi possível calcular a rota. Verifique se os pontos estão corretos e tente novamente.'
+      );
+    } finally {
+      setIsCalculating(false);
     }
   };
 
@@ -98,7 +127,11 @@ export default function DestinationSelectionScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <Stack.Screen
         options={{
           headerShown: true,
@@ -146,11 +179,35 @@ export default function DestinationSelectionScreen() {
             title="Destino"
           />
         )}
+
+        {/* Polyline da Rota - Linha mostrando o caminho */}
+        {order.origin && markerPosition && (
+          <Polyline
+            coordinates={[
+              { 
+                latitude: order.origin.latitude, 
+                longitude: order.origin.longitude 
+              },
+              { 
+                latitude: markerPosition.latitude, 
+                longitude: markerPosition.longitude 
+              },
+            ]}
+            strokeColor={COLORS.primary}
+            strokeWidth={4}
+            lineDashPattern={[1]}
+          />
+        )}
       </MapView>
 
       {/* Painel inferior */}
       <View style={styles.bottomPanel}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 20 }}
+          nestedScrollEnabled={true}
+        >
           <Text style={styles.title}>Definir destino</Text>
 
           {/* Origem confirmada */}
@@ -164,10 +221,24 @@ export default function DestinationSelectionScreen() {
             </View>
           </View>
 
-          {/* Google Places Autocomplete */}
-          <GooglePlacesInput
-            placeholder="Buscar endereço de destino..."
-            onPlaceSelected={handlePlaceSelected}
+          {/* ✅ Autocomplete de Endereços - BIBLIOTECA NATIVA! */}
+          <AddressAutocomplete
+            placeholder="Digite rua, número ou local de destino..."
+            icon="navigate"
+            iconColor="#FF5722"
+            onLocationSelect={(location) => {
+              const coords = {
+                latitude: location.latitude,
+                longitude: location.longitude,
+              };
+              setMarkerPosition(coords);
+              setRegion({
+                ...region,
+                latitude: location.latitude,
+                longitude: location.longitude,
+              });
+              setSelectedAddress(location.fullAddress);
+            }}
             defaultValue={selectedAddress}
           />
 
@@ -210,16 +281,20 @@ export default function DestinationSelectionScreen() {
           <TouchableOpacity
             style={[
               styles.confirmButton,
-              (!markerPosition || !selectedAddress) && styles.confirmButtonDisabled,
+              (!markerPosition || !selectedAddress || isCalculating) && styles.confirmButtonDisabled,
             ]}
             onPress={handleConfirm}
-            disabled={!markerPosition || !selectedAddress}
+            disabled={!markerPosition || !selectedAddress || isCalculating}
           >
-            <Text style={styles.confirmButtonText}>Confirmar destino</Text>
+            {isCalculating ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.confirmButtonText}>Confirmar destino</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -240,7 +315,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: '65%',
+    maxHeight: '75%', // ✅ Aumentado para ver mais conteúdo
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.1,
